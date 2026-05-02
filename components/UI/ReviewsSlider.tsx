@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { collection, getDocs, orderBy, query, limit } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import styles from "./ReviewsSlider.module.css";
 
 interface Review {
@@ -10,35 +12,64 @@ interface Review {
   text: string;
   rating: number;
   avatar: string;
+  createdAt?: number;
 }
 
-interface ReviewsSliderProps {
-  reviews: Review[];
-  visibleCount?: number;
-}
+export default function ReviewsSlider() {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
 
-export default function ReviewsSlider({ reviews, visibleCount = 4 }: ReviewsSliderProps) {
-  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"), limit(10));
+    getDocs(q).then((snapshot) => {
+      setReviews(
+        snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Omit<Review, "id">) }))
+      );
+    });
+  }, []);
 
-  const maxIndex = reviews.length - visibleCount;
-  const canPrev = index > 0;
-  const canNext = index < maxIndex;
+  const updateControls = () => {
+    const track = trackRef.current;
+    if (!track) return;
+    setCanPrev(track.scrollLeft > 0);
+    setCanNext(track.scrollLeft < track.scrollWidth - track.clientWidth - 1);
+  };
 
-  const visible = reviews.slice(index, index + visibleCount);
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    updateControls();
+    track.addEventListener("scroll", updateControls, { passive: true });
+    window.addEventListener("resize", updateControls);
+    return () => {
+      track.removeEventListener("scroll", updateControls);
+      window.removeEventListener("resize", updateControls);
+    };
+  }, [reviews]);
+
+  const scrollByAmount = (dir: -1 | 1) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const amount = Math.max(280, Math.round(track.clientWidth * 0.6));
+    track.scrollBy({ left: dir * amount, behavior: "smooth" });
+  };
 
   return (
     <div className={styles.wrapper}>
       <button
-        className={`${styles.arrow} ${styles.arrowLeft}`}
-        onClick={() => setIndex((i) => Math.max(0, i - 1))}
+        type="button"
+        className={`${styles.navArrow} ${styles.navArrowLeft}`}
+        onClick={() => scrollByAmount(-1)}
         disabled={!canPrev}
         aria-label="Попередній"
       >
         ‹
       </button>
 
-      <div className={styles.track}>
-        {visible.map((review) => (
+      <div className={styles.track} ref={trackRef}>
+        {reviews.map((review) => (
           <article key={review.id} className={styles.card}>
             <p>{review.text}</p>
             <div className={styles.footer}>
@@ -62,8 +93,9 @@ export default function ReviewsSlider({ reviews, visibleCount = 4 }: ReviewsSlid
       </div>
 
       <button
-        className={`${styles.arrow} ${styles.arrowRight}`}
-        onClick={() => setIndex((i) => Math.min(maxIndex, i + 1))}
+        type="button"
+        className={`${styles.navArrow} ${styles.navArrowRight}`}
+        onClick={() => scrollByAmount(1)}
         disabled={!canNext}
         aria-label="Наступний"
       >

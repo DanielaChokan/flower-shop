@@ -1,11 +1,8 @@
 import Image from "next/image";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import ProductCard from "@/components/product/ProductCard";
-import FilterSidebar from "@/components/product/FilterSidebar";
 import ReviewsSlider from "@/components/UI/ReviewsSlider";
-import products from "@/modules/mock/products.json";
-import reviews from "@/modules/mock/reviews.json";
+import ProductsSection from "@/components/product/ProductsSection";
 import styles from "./page.module.css";
 
 const featureItems = [
@@ -96,21 +93,7 @@ export default function Home() {
               Перейти до каталогу →
             </a>
           </div>
-          <div className={styles.productsBody}>
-            <FilterSidebar />
-            <div className={styles.productGrid}>
-              {products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  name={product.name}
-                  price={product.price}
-                  image={product.image}
-                  rating={product.rating}
-                />
-              ))}
-            </div>
-          </div>
+          <ProductsSection />
         </section>
 
         <section className={styles.loyalty}>
@@ -166,7 +149,7 @@ export default function Home() {
 
         <section className={styles.reviews}>
           <h2>Відгуки наших клієнтів</h2>
-          <ReviewsSlider reviews={reviews} visibleCount={4} />
+          <ReviewsSlider />
         </section>
       </main>
       <Footer />

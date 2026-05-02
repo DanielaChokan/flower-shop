@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import styles from "./Footer.module.css";
 
 export default function Footer() {
@@ -38,9 +39,9 @@ export default function Footer() {
             <li>Допомога</li>
             <li>Доставка</li>
           </ul>
-          <button type="button" className={styles.catalogButton}>
+          <Link href="/catalog" className={styles.catalogButton}>
             Каталог
-          </button>
+          </Link>
         </div>
 
         <div className={styles.rightCol}>

@@ -1,40 +1,57 @@
 .wrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.arrow {
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  background: none;
-  border: 1px solid var(--secondary-dark);
-  border-radius: 50%;
-  font-size: 24px;
-  line-height: 1;
-  color: var(--neutral-dark);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, color 0.15s;
-}
-
-.arrow:hover:not(:disabled) {
-  background: var(--secondary);
-}
-
-.arrow:disabled {
-  opacity: 0.25;
-  cursor: default;
+  position: relative;
+  padding: 0 48px;
 }
 
 .track {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
   gap: 16px;
-  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 4px 0;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.navArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--secondary-dark);
+  background: var(--surface);
+  color: var(--neutral-dark);
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  z-index: 1;
+}
+
+.navArrow:hover:not(:disabled) {
+  background: var(--secondary-light);
+}
+
+.navArrow:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.navArrowLeft {
+  left: 8px;
+}
+
+.navArrowRight {
+  right: 8px;
 }
 
 .card {
@@ -45,6 +62,9 @@
   font-size: 13px;
   display: flex;
   flex-direction: column;
+  flex: 0 0 calc(25% - 12px);
+  min-width: 220px;
+  scroll-snap-align: start;
 }
 
 .footer {
