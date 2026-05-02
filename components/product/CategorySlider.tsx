@@ -6,13 +6,18 @@ import styles from "./CategorySlider.module.css";
 type CategorySliderProps = {
   tabs: string[];
   initialActive?: number;
+  activeIndex?: number;
+  onSelect?: (index: number) => void;
 };
 
 export default function CategorySlider({
   tabs,
   initialActive = 0,
+  activeIndex: controlledIndex,
+  onSelect,
 }: CategorySliderProps) {
-  const [activeIndex, setActiveIndex] = useState(initialActive);
+  const [internalIndex, setInternalIndex] = useState(initialActive);
+  const activeIndex = controlledIndex !== undefined ? controlledIndex : internalIndex;
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(false);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -75,7 +80,7 @@ export default function CategorySlider({
               role="tab"
               aria-selected={isActive}
               className={isActive ? styles.tabActive : styles.tab}
-              onClick={() => setActiveIndex(index)}
+              onClick={() => { setInternalIndex(index); onSelect?.(index); }}
             >
               {tab}
             </button>
