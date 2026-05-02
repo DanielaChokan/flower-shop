@@ -1,0 +1,122 @@
+.footer {
+  background: var(--footer);
+  color: rgba(249, 234, 240, 0.85);
+  padding: 44px 56px 24px;
+}
+
+.top {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 56px;
+  align-items: stretch;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 13px;
+  justify-content: space-between;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-heading), serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--neutral-light);
+}
+
+.logoImage {
+  filter: invert(1);
+}
+
+.contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(249, 234, 240, 0.8);
+}
+
+.callButton {
+  width: fit-content;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  background: var(--neutral-light);
+  color: var(--footer);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.centerCol {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  align-items: center;
+  text-align: center;
+  justify-content: space-between;
+}
+
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  align-items: flex-end;
+  text-align: right;
+  justify-content: space-between;
+}
+
+.linkList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  font-size: 14px;
+  color: rgba(249, 234, 240, 0.75);
+  padding: 0;
+  margin: 0;
+}
+
+.social {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 13px;
+  color: rgba(249, 234, 240, 0.75);
+  align-items: flex-end;
+}
+
+.socialIcons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.catalogButton {
+  width: fit-content;
+  padding: 8px 36px;
+  border-radius: 10px;
+  border: none;
+  background: var(--neutral-light);
+  color: var(--footer);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bottom {
+  margin-top: 28px;
+  font-size: 12px;
+  color: rgba(249, 234, 240, 0.5);
+}
