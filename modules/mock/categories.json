@@ -1,0 +1,22 @@
+[
+  {
+    "id": "roses",
+    "name": "Троянди"
+  },
+  {
+    "id": "bouquets",
+    "name": "Букети"
+  },
+  {
+    "id": "tulips",
+    "name": "Тюльпани"
+  },
+  {
+    "id": "exotic",
+    "name": "Екзотичні"
+  },
+  {
+    "id": "gypsophila",
+    "name": "Гіпсофіли"
+  }
+]
