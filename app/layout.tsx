@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { CartProvider } from "@/modules/cart/CartContext";
+import CartDrawer from "@/components/cart/CartDrawer";
 
 const inter = Inter({
     variable: "--font-body",
@@ -19,7 +21,12 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="uk" className={inter.variable}>
-            <body>{children}</body>
+            <body>
+          <CartProvider>
+            {children}
+            <CartDrawer />
+          </CartProvider>
+        </body>
         </html>
     );
 }

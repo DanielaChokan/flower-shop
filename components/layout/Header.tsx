@@ -1,7 +1,11 @@
+"use client";
+
 import Image from "next/image";
 import styles from "./Header.module.css";
+import { useCart } from "@/modules/cart/CartContext";
 
 export default function Header() {
+  const { toggleCart, itemCount } = useCart();
   return (
     <header className={styles.header}>
       <div className={styles.logo}>
@@ -28,8 +32,13 @@ export default function Header() {
           />
           <span>Обране</span>
         </button>
-        <button type="button" className={styles.action}>
-          <Image src="/icons/header-cart.png" alt="Кошик" width={22} height={22} />
+        <button type="button" className={styles.action} onClick={toggleCart}>
+          <div className={styles.cartIconWrap}>
+            <Image src="/icons/header-cart.png" alt="Кошик" width={22} height={22} />
+            {itemCount > 0 && (
+              <span className={styles.cartBadge}>{itemCount}</span>
+            )}
+          </div>
           <span>Кошик</span>
         </button>
                 <button type="button" className={styles.action}>
