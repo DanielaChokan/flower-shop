@@ -1,66 +1,174 @@
 import Image from "next/image";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import ProductCard from "@/components/product/ProductCard";
+import FilterSidebar from "@/components/product/FilterSidebar";
+import ReviewsSlider from "@/components/UI/ReviewsSlider";
+import products from "@/modules/mock/products.json";
+import reviews from "@/modules/mock/reviews.json";
 import styles from "./page.module.css";
+
+const featureItems = [
+  {
+    title: "Авторські букети",
+    subtitle: "унікальні композиції для особливих моментів",
+    image: "/images/home-line1.png",
+  },
+  {
+    title: "Тільки свіжі квіти",
+    subtitle: "щоденні поставки від перевірених постачальників",
+    image: "/images/home-line2.png",
+  },
+  {
+    title: "Доставка квітів 24/7",
+    subtitle: "привеземо букет вчасно, коли це найважливіше",
+    image: "/images/home-line3.png",
+  },
+  {
+    title: "Власні квітники",
+    subtitle: "контроль якості від вирощування до вручення",
+    image: "/images/home-line4.png",
+  },
+];
 
 export default function Home() {
   return (
     <div className={styles.page}>
+      <Header />
       <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+        <section className={styles.hero}>
+          <div className={styles.heroMain}>
             <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+              src="/images/home-section1.png"
+              alt="Квіти з доставкою"
+              fill
+              sizes="(max-width: 900px) 100vw, 60vw"
+              priority
             />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+            <div className={styles.heroText}>
+              <h1>Квіти з доставкою подаруйте щастя близьким</h1>
+            </div>
+          </div>
+          <div className={styles.heroSide}>
+            <div className={styles.sideCard}>
+              <Image
+                src="/images/home-section2.png"
+                alt="Букет мрії"
+                fill
+                sizes="(max-width: 900px) 100vw, 30vw"
+              />
+              <div>
+                <h3>Букет мрії для будь-якого випадку</h3>
+              </div>
+            </div>
+            <div className={styles.sideCard}>
+              <Image
+                src="/images/home-section3.png"
+                alt="Даруйте радість"
+                fill
+                sizes="(max-width: 900px) 100vw, 30vw"
+              />
+              <div>
+                <h3>Даруйте радість з нашими квітами</h3>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.features}>
+          {featureItems.map((item) => (
+            <article key={item.title} className={styles.featureCard}>
+              <div className={styles.featureImage}>
+                <Image src={item.image} alt={item.title} fill sizes="64px" />
+              </div>
+              <div>
+                <h4>{item.title}</h4>
+                <p>{item.subtitle}</p>
+              </div>
+            </article>
+          ))}
+        </section>
+
+        <section className={styles.products}>
+          <div className={styles.productsHeader}>
+            <h2>Найбажаніші</h2>
+            <a href="/catalog" className={styles.catalogLink}>
+              Перейти до каталогу →
+            </a>
+          </div>
+          <div className={styles.productsBody}>
+            <FilterSidebar />
+            <div className={styles.productGrid}>
+              {products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  name={product.name}
+                  price={product.price}
+                  image={product.image}
+                  rating={product.rating}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.loyalty}>
+          <div className={styles.loyaltyInfo}>
+            <Image
+              src="/images/home-discount-left.png"
+              alt="Клуб"
+              width={90}
+              height={90}
+            />
+            <div>
+              <h3>Тільки для постійних клієнтів</h3>
+              <p>Квіти на всі свята у році</p>
+            </div>
+          </div>
+          <div className={styles.loyaltyBenefits}>
+            <div>
+              <Image
+                src="/images/home-discount-checkbox.png"
+                alt="Знижка"
+                width={18}
+                height={18}
+              />
+              <span>Знижка на товар — 10%</span>
+            </div>
+            <div>
+              <Image
+                src="/images/home-discount-checkbox.png"
+                alt="Доставка"
+                width={18}
+                height={18}
+              />
+              <span>Безкоштовна доставка</span>
+            </div>
+            <div>
+              <Image
+                src="/images/home-discount-checkbox.png"
+                alt="Інформація"
+                width={18}
+                height={18}
+              />
+              <span>Інформація про акції</span>
+            </div>
+          </div>
+          <Image
+            className={styles.loyaltyRight}
+            src="/images/home-discount-right.png"
+            alt="Квіти"
+            width={90}
+            height={90}
+          />
+        </section>
+
+        <section className={styles.reviews}>
+          <h2>Відгуки наших клієнтів</h2>
+          <ReviewsSlider reviews={reviews} visibleCount={4} />
+        </section>
       </main>
+      <Footer />
     </div>
   );
 }

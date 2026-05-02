@@ -1,0 +1,74 @@
+[
+  {
+    "id": "1",
+    "name": "Тюльпани рожеві",
+    "price": 250,
+    "image": "/images/1.jpg",
+    "categoryId": "tulips",
+    "color": "pink",
+    "type": "spring",
+    "description": "Ніжні тюльпани для весняних моментів",
+    "isPopular": true,
+    "rating": 4.9
+  },
+  {
+    "id": "2",
+    "name": "Троянди білі",
+    "price": 300,
+    "image": "/images/2.jpg",
+    "categoryId": "roses",
+    "color": "white",
+    "type": "classic",
+    "description": "Стримані та елегантні білі троянди",
+    "isPopular": true,
+    "rating": 4.7
+  },
+  {
+    "id": "3",
+    "name": "Букет “Насолода”",
+    "price": 2500,
+    "image": "/images/3.jpg",
+    "categoryId": "bouquets",
+    "color": "mix",
+    "type": "luxury",
+    "description": "Преміальний мікс із сезонних квітів",
+    "isPopular": true,
+    "rating": 5
+  },
+  {
+    "id": "4",
+    "name": "Протея рожеві",
+    "price": 500,
+    "image": "/images/4.jpg",
+    "categoryId": "exotic",
+    "color": "pink",
+    "type": "exotic",
+    "description": "Сміливий акцент з протеї",
+    "isPopular": false,
+    "rating": 4.6
+  },
+  {
+    "id": "5",
+    "name": "Букет “Кохання”",
+    "price": 1800,
+    "image": "/images/5.jpg",
+    "categoryId": "bouquets",
+    "color": "mix",
+    "type": "romantic",
+    "description": "Ніжний букет для особливих моментів",
+    "isPopular": true,
+    "rating": 4.8
+  },
+  {
+    "id": "6",
+    "name": "Гіпсофіли рожеві",
+    "price": 300,
+    "image": "/images/6.jpg",
+    "categoryId": "gypsophila",
+    "color": "pink",
+    "type": "minimal",
+    "description": "Легкість та повітряність у кожній гілочці",
+    "isPopular": false,
+    "rating": 4.5
+  }
+]
