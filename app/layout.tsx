@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/modules/cart/CartContext";
+import { AuthProvider } from "@/modules/auth/AuthContext";
 import CartDrawer from "@/components/cart/CartDrawer";
+import AuthModal from "@/components/UI/AuthModal";
+import AuthGuard from "@/components/UI/AuthGuard";
 
 const inter = Inter({
     variable: "--font-body",
@@ -22,11 +25,16 @@ export default function RootLayout({
     return (
         <html lang="uk" className={inter.variable}>
             <body>
-          <CartProvider>
-            {children}
-            <CartDrawer />
-          </CartProvider>
-        </body>
+                <AuthProvider>
+                    <CartProvider>
+                        <AuthGuard>
+                            {children}
+                        </AuthGuard>
+                        <CartDrawer />
+                        <AuthModal />
+                    </CartProvider>
+                </AuthProvider>
+            </body>
         </html>
     );
 }

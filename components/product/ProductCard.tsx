@@ -3,6 +3,7 @@
 import Image from "next/image";
 import styles from "./ProductCard.module.css";
 import { useCart } from "@/modules/cart/CartContext";
+import { useAuth } from "@/modules/auth/AuthContext";
 
 type ProductCardProps = {
     id: string;
@@ -31,6 +32,13 @@ export default function ProductCard({
     onQuantityChange,
 }: ProductCardProps) {
     const { addItem } = useCart();
+    const { user, openAuth } = useAuth();
+
+    const handleAddToCart = () => {
+        if (!user) { openAuth(); return; }
+        addItem({ id, name, price, image, rating });
+    };
+
     return (
         <article className={styles.card}>
             <div className={styles.imageWrap}>
@@ -66,7 +74,7 @@ export default function ProductCard({
                         </button>
                     </div>
                 ) : (
-                    <button type="button" onClick={() => addItem({ id, name, price, image, rating })}>Додати до кошика</button>
+                    <button type="button" onClick={handleAddToCart}>Додати до кошика</button>
                 )}
             </div>
         </article>
