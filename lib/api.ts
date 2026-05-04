@@ -7,7 +7,6 @@ export type Product = {
   categoryId?: string
   color?: string
   type?: string
-  recipient?: string
   description?: string
 }
 

@@ -11,7 +11,7 @@ import CategorySlider from "@/components/product/CategorySlider";
 import type { Product } from "@/lib/api";
 import styles from "./page.module.css";
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 15;
 
 const defaultFilters = (): FilterState => ({
     priceMin: 0,
@@ -29,6 +29,7 @@ export default function CatalogPage() {
     const [filters, setFilters] = useState<FilterState>(defaultFilters());
     const [activeTabIndex, setActiveTabIndex] = useState(0);
     const [page, setPage] = useState(1);
+    const [filterOpen, setFilterOpen] = useState(false);
 
     useEffect(() => {
         Promise.all([
@@ -124,71 +125,81 @@ export default function CatalogPage() {
                 <h2 className={styles.heading}>Каталог</h2>
 
                 <div className={styles.body}>
-                    <FilterSidebar
-                        value={filters}
-                        onChange={handleFilterChange}
-                        onClear={handleClear}
-                        categoryOptions={categoryOptions}
-                        colorOptions={colorOptions}
-                        typeOptions={typeOptions}
-                    />
+                    <div className={styles.searchWrap}>
+                        <input
+                            type="text"
+                            className={styles.searchInput}
+                            placeholder="Пошук за назвою..."
+                            value={search}
+                            onChange={(e) => handleSearch(e.target.value)}
+                        />
+                        <button
+                            type="button"
+                            className={`${styles.filterToggleBtn}${filterOpen ? ` ${styles.filterToggleBtnActive}` : ""}`}
+                            onClick={() => setFilterOpen((v) => !v)}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                            Фільтри
+                        </button>
+                    </div>
 
-                    <div>
-                        <div className={styles.searchWrap}>
-                            <input
-                                type="text"
-                                className={styles.searchInput}
-                                placeholder="Пошук за назвою..."
-                                value={search}
-                                onChange={(e) => handleSearch(e.target.value)}
+                    {filterOpen && (
+                        <div className={styles.filterDropdown}>
+                            <FilterSidebar
+                                value={filters}
+                                onChange={handleFilterChange}
+                                onClear={handleClear}
+                                categoryOptions={categoryOptions}
+                                colorOptions={colorOptions}
+                                typeOptions={typeOptions}
                             />
                         </div>
+                    )}
 
-                        {loading ? (
-                            <p className={styles.noResults}>Завантаження...</p>
-                        ) : (
-                            <div className={styles.productGrid}>
-                                {paginated.length === 0 ? (
-                                    <p className={styles.noResults}>Нічого не знайдено</p>
-                                ) : (
-                                    paginated.map((product) => (
-                                        <ProductCard
-                                            key={product.id}
-                                            id={product.id}
-                                            name={product.name}
-                                            price={product.price}
-                                            image={product.image}
-                                            rating={product.rating}
-                                        />
-                                    ))
-                                )}
-                            </div>
-                        )}
+                    {loading ? (
+                        <p className={styles.noResults}>Завантаження...</p>
+                    ) : paginated.length === 0 ? (
+                        <p className={styles.noResults}>Нічого не знайдено</p>
+                    ) : (
+                        <div className={styles.productGrid}>
+                            {paginated.map((product) => (
+                                <ProductCard
+                                    key={product.id}
+                                    id={product.id}
+                                    name={product.name}
+                                    price={product.price}
+                                    image={product.image}
+                                    rating={product.rating}
+                                />
+                            ))}
+                        </div>
+                    )}
 
-                        {!loading && totalPages > 1 && (
-                            <div className={styles.pagination}>
-                                <button
-                                    type="button"
-                                    className={styles.paginationArrow}
-                                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                    disabled={page === 1}
-                                    aria-label="Попередня сторінка"
-                                >
-                                    ‹
-                                </button>
-                                <span className={styles.paginationCurrent}>{page}</span>
-                                <button
-                                    type="button"
-                                    className={styles.paginationArrow}
-                                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                                    disabled={page === totalPages}
-                                    aria-label="Наступна сторінка"
-                                >
-                                    ›
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                    {!loading && totalPages > 1 && (
+                        <div className={styles.pagination}>
+                            <button
+                                type="button"
+                                className={styles.paginationArrow}
+                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                aria-label="Попередня сторінка"
+                            >
+                                ‹
+                            </button>
+                            <span className={styles.paginationCurrent}>{page}</span>
+                            <button
+                                type="button"
+                                className={styles.paginationArrow}
+                                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                disabled={page === totalPages}
+                                aria-label="Наступна сторінка"
+                            >
+                                ›
+                            </button>
+                        </div>
+                    )}
                 </div>
             </main>
 

@@ -2,7 +2,6 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    overflow-x: hidden;
 }
 
 .main {
@@ -20,14 +19,59 @@
 }
 
 .body {
-    display: grid;
-    grid-template-columns: 350px 1fr;
-    gap: 130px;
-    align-items: stretch;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .searchWrap {
-    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.filterToggleBtn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    border: 1px solid #e7e1e4;
+    border-radius: 10px;
+    background: var(--surface);
+    font-size: 15px;
+    color: var(--neutral-text);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.filterToggleBtn:hover {
+    border-color: var(--primary);
+    background: var(--secondary-light);
+}
+
+.filterToggleBtnActive {
+    border-color: var(--primary);
+    background: var(--secondary-light);
+    color: var(--primary);
+}
+
+.filterDropdown {
+    border-radius: 14px;
+    border: 1px solid #ebe6e8;
+    background: var(--surface);
+    padding: 0;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.contentArea {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    grid-column: 2 / -1;
 }
 
 .searchInput {
@@ -47,10 +91,14 @@
     border-color: var(--primary);
 }
 
+.firstRowCards {
+    display: contents;
+}
+
 .productGrid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 50px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 24px;
 }
 
 .noResults {

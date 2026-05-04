@@ -151,10 +151,6 @@ export default function FilterSidebar({ value: filters, onChange, onClear, categ
                 </ul>
             </details>
             )}
-
-            <button type="button" className={styles.applyButton} onClick={() => onChange(filters)}>
-                Застосувати зміни
-            </button>
             <button type="button" className={styles.clearButton} onClick={handleClear}>
                 Очистити фільтр
             </button>
