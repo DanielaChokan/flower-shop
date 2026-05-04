@@ -27,17 +27,30 @@ export default function Footer() {
               <span>+380 99 000 0000</span>
             </div>
           </div>
-          <button type="button" className={styles.callButton}>
-            Замовити дзвінок
-          </button>
         </div>
 
         <div className={styles.centerCol}>
           <ul className={styles.linkList}>
-            <li>Статті</li>
-            <li>Юр. особам</li>
-            <li>Допомога</li>
-            <li>Доставка</li>
+            <li>
+              <Link href="#" className={styles.footerLink}>
+                Статті
+              </Link>
+            </li>
+            <li>
+              <Link href="#" className={styles.footerLink}>
+                Юр. особам
+              </Link>
+            </li>
+            <li>
+              <Link href="#" className={styles.footerLink}>
+                Допомога
+              </Link>
+            </li>
+            <li>
+              <Link href="#" className={styles.footerLink}>
+                Доставка
+              </Link>
+            </li>
           </ul>
           <Link href="/catalog" className={styles.catalogButton}>
             Каталог
@@ -46,23 +59,49 @@ export default function Footer() {
 
         <div className={styles.rightCol}>
           <ul className={styles.linkList}>
-            <li>Оплата</li>
-            <li>Умови повернення</li>
-            <li>Робота у нас</li>
-            <li>Політика конфіденційності</li>
+            <li>
+              <Link href="#" className={styles.footerLink}>
+                Оплата
+              </Link>
+            </li>
+            <li>
+              <Link href="#" className={styles.footerLink}>
+                Умови повернення
+              </Link>
+            </li>
+            <li>
+              <Link href="#" className={styles.footerLink}>
+                Робота у нас
+              </Link>
+            </li>
+            <li>
+              <Link href="#" className={styles.footerLink}>
+                Політика конфіденційності
+              </Link>
+            </li>
           </ul>
           <div className={styles.social}>
-            <span>Ми в соцмережах</span>
+            <Link href="#" className={styles.footerLink}>
+              Ми в соцмережах
+            </Link>
             <div className={styles.socialIcons}>
-              <Image src="/icons/footer-pinterest.png" alt="Pinterest" width={24} height={24} />
-              <Image src="/icons/footer-telegram.png" alt="Telegram" width={24} height={24} />
-              <Image src="/icons/footer-tik-tok.png" alt="TikTok" width={24} height={24} />
-              <Image src="/icons/footer-instagram.png" alt="Instagram" width={24} height={24} />
+              <Link href="#" className={styles.socialLink} aria-label="Pinterest">
+                <Image src="/icons/footer-pinterest.png" alt="Pinterest" width={24} height={24} />
+              </Link>
+              <Link href="#" className={styles.socialLink} aria-label="Telegram">
+                <Image src="/icons/footer-telegram.png" alt="Telegram" width={24} height={24} />
+              </Link>
+              <Link href="#" className={styles.socialLink} aria-label="TikTok">
+                <Image src="/icons/footer-tik-tok.png" alt="TikTok" width={24} height={24} />
+              </Link>
+              <Link href="#" className={styles.socialLink} aria-label="Instagram">
+                <Image src="/icons/footer-instagram.png" alt="Instagram" width={24} height={24} />
+              </Link>
             </div>
           </div>
         </div>
       </div>
-      <div className={styles.bottom}>© Copyright 2026</div>
+      <div className={styles.bottom}>© 2026 FloraSwift</div>
     </footer>
   );
 }

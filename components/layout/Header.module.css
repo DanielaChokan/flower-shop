@@ -45,13 +45,14 @@
   background: transparent;
   border: none;
   cursor: pointer;
+  transition: color 0.2s;
 }
 
 .action:hover {
   color: var(--primary-light);
 }
 
-.action:hover img {
+.action:hover img:not(.avatar) {
   filter: brightness(0) saturate(100%) invert(45%) sepia(40%) saturate(500%) hue-rotate(300deg);
 }
 

@@ -16,7 +16,7 @@
   flex-direction: column;
   gap: 16px;
   font-size: 13px;
-  justify-content: space-between;
+  justify-content: flex-start;
 }
 
 .logo {
@@ -45,18 +45,6 @@
   gap: 8px;
   font-size: 13px;
   color: rgba(249, 234, 240, 0.8);
-}
-
-.callButton {
-  width: fit-content;
-  padding: 8px 18px;
-  border-radius: 8px;
-  border: none;
-  background: var(--neutral-light);
-  color: var(--footer);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
 }
 
 .centerCol {
@@ -88,6 +76,17 @@
   margin: 0;
 }
 
+.footerLink {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.footerLink:hover {
+  color: var(--neutral-light);
+  opacity: 1;
+}
+
 .social {
   display: flex;
   flex-direction: column;
@@ -103,6 +102,20 @@
   align-items: center;
 }
 
+.socialLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0.85;
+}
+
+.socialLink:hover {
+  transform: translateY(-2px);
+  opacity: 1;
+}
+
 .catalogButton {
   width: fit-content;
   padding: 8px 36px;
@@ -113,6 +126,13 @@
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.catalogButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(18, 4, 9, 0.25);
+  opacity: 0.95;
 }
 
 .bottom {
