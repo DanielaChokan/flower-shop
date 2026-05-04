@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/modules/auth/AuthContext";
+import { loginSchema, registerSchema } from "@/schemas/auth.schema";
 import styles from "./AuthModal.module.css";
 
 type Mode = "login" | "register";
@@ -15,22 +16,15 @@ export default function AuthModal() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
-
-  useEffect(() => {
-    if (isAuthOpen) {
-      setMode("login");
-      setEmail(""); setPassword(""); setFirstName(""); setLastName("");
-      setError(""); setResetSent(false); setLoading(false);
-    }
-  }, [isAuthOpen]);
 
   if (!isAuthOpen) return null;
 
   const clearForm = () => {
     setEmail(""); setPassword(""); setFirstName(""); setLastName("");
-    setError(""); setResetSent(false);
+    setError(""); setFieldErrors({}); setResetSent(false);
   };
 
   const switchMode = (m: Mode) => { setMode(m); clearForm(); };
@@ -38,6 +32,28 @@ export default function AuthModal() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
+
+    if (mode === "login") {
+      const result = loginSchema.safeParse({ email, password });
+      if (!result.success) {
+        const flat = result.error.flatten().fieldErrors;
+        const errs: Record<string, string> = {};
+        Object.entries(flat).forEach(([k, v]) => { if (v?.[0]) errs[k] = v[0]; });
+        setFieldErrors(errs);
+        return;
+      }
+    } else {
+      const result = registerSchema.safeParse({ lastName, firstName, email, password });
+      if (!result.success) {
+        const flat = result.error.flatten().fieldErrors;
+        const errs: Record<string, string> = {};
+        Object.entries(flat).forEach(([k, v]) => { if (v?.[0]) errs[k] = v[0]; });
+        setFieldErrors(errs);
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       if (mode === "login") {
@@ -108,9 +124,10 @@ export default function AuthModal() {
                   required
                   autoComplete="email"
                 />
+                {fieldErrors.email && <p className={styles.fieldError}>{fieldErrors.email}</p>}
               </div>
               <div className={styles.field}>
-                <label className={styles.label}>Password</label>
+                <label className={styles.label}>Пароль</label>
                 <input
                   type="password"
                   className={styles.input}
@@ -120,6 +137,7 @@ export default function AuthModal() {
                   required
                   autoComplete="current-password"
                 />
+                {fieldErrors.password && <p className={styles.fieldError}>{fieldErrors.password}</p>}
               </div>
 
               <button type="button" className={styles.forgotLink} onClick={handleReset}>
@@ -163,6 +181,7 @@ export default function AuthModal() {
                   required
                   autoComplete="family-name"
                 />
+                {fieldErrors.lastName && <p className={styles.fieldError}>{fieldErrors.lastName}</p>}
               </div>
               <div className={styles.field}>
                 <input
@@ -174,6 +193,7 @@ export default function AuthModal() {
                   required
                   autoComplete="given-name"
                 />
+                {fieldErrors.firstName && <p className={styles.fieldError}>{fieldErrors.firstName}</p>}
               </div>
               <div className={styles.field}>
                 <input
@@ -185,6 +205,7 @@ export default function AuthModal() {
                   required
                   autoComplete="email"
                 />
+                {fieldErrors.email && <p className={styles.fieldError}>{fieldErrors.email}</p>}
               </div>
               <div className={styles.field}>
                 <input
@@ -196,6 +217,7 @@ export default function AuthModal() {
                   required
                   autoComplete="new-password"
                 />
+                {fieldErrors.password && <p className={styles.fieldError}>{fieldErrors.password}</p>}
               </div>
 
               {error && <p className={styles.error}>{error}</p>}

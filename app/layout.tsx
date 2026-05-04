@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import { CartProvider } from "@/modules/cart/CartContext";
+import { ThemeProvider } from "@/modules/theme/ThemeContext";
 import { AuthProvider } from "@/modules/auth/AuthContext";
 import CartDrawer from "@/components/cart/CartDrawer";
-import AuthModal from "@/components/UI/AuthModal";
-import AuthGuard from "@/components/UI/AuthGuard";
+import AuthModalHost from "@/modules/auth/components/AuthModalHost";
+import LoadingGuard from "@/components/UI/LoadingGuard";
+import AuthRequiredListener from "@/components/UI/AuthRequiredListener";
 
 const inter = Inter({
     variable: "--font-body",
@@ -25,15 +28,20 @@ export default function RootLayout({
     return (
         <html lang="uk" className={inter.variable}>
             <body>
+                <ThemeProvider>
                 <AuthProvider>
                     <CartProvider>
-                        <AuthGuard>
+                        <LoadingGuard>
                             {children}
-                        </AuthGuard>
+                        </LoadingGuard>
                         <CartDrawer />
-                        <AuthModal />
+                        <AuthModalHost />
+                        <Suspense>
+                            <AuthRequiredListener />
+                        </Suspense>
                     </CartProvider>
                 </AuthProvider>
+                </ThemeProvider>
             </body>
         </html>
     );

@@ -13,10 +13,11 @@ import {
   type User,
 } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 
 type AuthContextType = {
   user: User | null;
+  isAdmin: boolean;
   loading: boolean;
   isAuthOpen: boolean;
   openAuth: () => void;
@@ -32,12 +33,25 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
+    const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
+      if (u) {
+        const tokenResult = await u.getIdTokenResult();
+        document.cookie = `__session=${tokenResult.token}; path=/; SameSite=Strict`;
+        const snap = await getDoc(doc(db, "users", u.uid));
+        const role = snap.data()?.role ?? "user";
+        setIsAdmin(role === "admin");
+        document.cookie = `__role=${role}; path=/; SameSite=Strict`;
+      } else {
+        setIsAdmin(false);
+        document.cookie = "__session=; path=/; max-age=0";
+        document.cookie = "__role=; path=/; max-age=0";
+      }
       setLoading(false);
     });
     return unsubscribe;
@@ -67,6 +81,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       lastName,
       displayName,
       photoURL: null,
+      phone: null,
+      address: null,
+      customerType: null,
+      role: "user",
       createdAt: serverTimestamp(),
     });
     setIsAuthOpen(false);
@@ -81,6 +99,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: u.email,
       displayName: u.displayName,
       photoURL: u.photoURL,
+      role: "user",
       createdAt: serverTimestamp(),
     }, { merge: true });
     setIsAuthOpen(false);
@@ -96,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider value={{
-      user, loading, isAuthOpen,
+      user, isAdmin, loading, isAuthOpen,
       openAuth, closeAuth,
       login, register, loginWithGoogle, logout, resetPassword,
     }}>
