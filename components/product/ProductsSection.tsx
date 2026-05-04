@@ -18,7 +18,7 @@ export default function ProductsSection() {
     });
   }, []);
 
-  const top12 = [...products].sort((a, b) => b.rating - a.rating).slice(0, 12);
+  const top12 = [...products].sort((a, b) => b.rating - a.rating).slice(0, 15);
 
   return (
     <div className={styles.productGrid4}>
