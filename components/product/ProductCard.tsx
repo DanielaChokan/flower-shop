@@ -5,6 +5,7 @@ import Link from "next/link";
 import styles from "./ProductCard.module.css";
 import { useCart } from "@/modules/cart/CartContext";
 import { useAuth } from "@/modules/auth/AuthContext";
+import { useFavourites } from "@/modules/favourites/FavouritesContext";
 
 type ProductCardProps = {
     id: string;
@@ -34,6 +35,14 @@ export default function ProductCard({
 }: ProductCardProps) {
     const { addItem } = useCart();
     const { user, openAuth } = useAuth();
+    const { isFavourite, toggleFavourite } = useFavourites();
+    const fav = isFavourite(id);
+
+    const handleFavouriteClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        if (!user) { openAuth(); return; }
+        toggleFavourite(id);
+    };
 
     const handleAddToCart = () => {
         if (!user) { openAuth(); return; }
@@ -50,6 +59,16 @@ export default function ProductCard({
                         fill
                         sizes="(max-width: 900px) 50vw, 240px"
                     />
+                    <button
+                        type="button"
+                        className={`${styles.heartBtn}${fav ? ` ${styles.heartBtnActive}` : ""}`}
+                        onClick={handleFavouriteClick}
+                        aria-label={fav ? "Видалити з обраного" : "Додати до обраного"}
+                    >
+                        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                            <path d="M12 21C12 21 3 13.5 3 8a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.5-9 13-9 13z" />
+                        </svg>
+                    </button>
                 </div>
             </Link>
             <div className={styles.content}>

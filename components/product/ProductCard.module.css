@@ -113,3 +113,38 @@
     color: #fff;
     user-select: none;
 }
+
+.heartBtn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.88);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+    transition: background 0.15s, transform 0.15s;
+    padding: 0;
+}
+
+.heartBtn svg {
+    stroke: var(--primary);
+    fill: none;
+    stroke-width: 1.8;
+    transition: fill 0.15s, stroke 0.15s;
+}
+
+.heartBtn:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.12);
+}
+
+.heartBtnActive svg {
+    fill: var(--primary);
+    stroke: var(--primary);
+}

@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { CartProvider } from "@/modules/cart/CartContext";
+import { FavouritesProvider } from "@/modules/favourites/FavouritesContext";
 import { ThemeProvider } from "@/modules/theme/ThemeContext";
 import { AuthProvider } from "@/modules/auth/AuthContext";
 import CartDrawer from "@/components/cart/CartDrawer";
@@ -30,6 +31,7 @@ export default function RootLayout({
             <body>
                 <ThemeProvider>
                 <AuthProvider>
+                    <FavouritesProvider>
                     <CartProvider>
                         <LoadingGuard>
                             {children}
@@ -40,6 +42,7 @@ export default function RootLayout({
                             <AuthRequiredListener />
                         </Suspense>
                     </CartProvider>
+                    </FavouritesProvider>
                 </AuthProvider>
                 </ThemeProvider>
             </body>

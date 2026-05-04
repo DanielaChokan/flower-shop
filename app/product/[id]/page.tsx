@@ -14,6 +14,7 @@ import Footer from "@/components/layout/Footer";
 import { useCart } from "@/modules/cart/CartContext";
 import { useAuth } from "@/modules/auth/AuthContext";
 import type { Product, Review } from "@/lib/api";
+import { useFavourites } from "@/modules/favourites/FavouritesContext";
 import styles from "./page.module.css";
 
 type ProductPageProps = {
@@ -33,13 +34,13 @@ export default function ProductPage({ params }: ProductPageProps) {
 	const [related, setRelated] = useState<Product[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [quantity, setQuantity] = useState(1);
-	const [favourited, setFavourited] = useState(false);
 	const [reviews, setReviews] = useState<ReviewWithUser[]>([]);
 	const [reviewText, setReviewText] = useState("");
 	const [reviewRating, setReviewRating] = useState(5);
 	const [submitting, setSubmitting] = useState(false)
 	const { addItem, updateQuantity } = useCart();
 	const { user, openAuth } = useAuth();
+	const { isFavourite, toggleFavourite } = useFavourites();
 
 	const loadReviews = async () => {
 		const q = query(
@@ -218,14 +219,14 @@ export default function ProductPage({ params }: ProductPageProps) {
 							</div>
 							<button
 								type="button"
-								className={`${styles.favourite}${favourited ? ` ${styles.favouriteActive}` : ""}`}
-								onClick={() => setFavourited((v) => !v)}
-								aria-label="Додати до обраного"
+								className={`${styles.favourite}${isFavourite(id) ? ` ${styles.favouriteActive}` : ""}`}
+								onClick={() => { if (!user) { openAuth(); return; } toggleFavourite(id); }}
+								aria-label={isFavourite(id) ? "Видалити з обраного" : "Додати до обраного"}
 							>
 								<svg viewBox="0 0 24 24" aria-hidden="true">
 									<path d="M12 21C12 21 3 13.5 3 8a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.5-9 13-9 13z" />
 								</svg>
-								Додати до обраного
+								{isFavourite(id) ? "Видалити з обраного" : "Додати до обраного"}
 							</button>
 						</div>
 					</div>

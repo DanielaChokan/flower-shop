@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const PROTECTED_PATHS = ["/catalog", "/product", "/cart", "/profile", "/admin"];
+const PROTECTED_PATHS = ["/catalog", "/product", "/cart", "/profile", "/admin", "/favourites"];
 const ADMIN_PATHS = ["/admin"];
 
 export function middleware(request: NextRequest) {
@@ -32,5 +32,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/catalog/:path*", "/product/:path*", "/cart/:path*", "/profile/:path*", "/admin/:path*"],
+  matcher: ["/catalog/:path*", "/product/:path*", "/cart/:path*", "/profile/:path*", "/admin/:path*", "/favourites/:path*"],
 };
