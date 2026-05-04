@@ -2,17 +2,17 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { collection, getDocs, orderBy, query, limit } from "firebase/firestore";
+import { collection, getDocs, orderBy, query, limit, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import styles from "./ReviewsSlider.module.css";
 
 interface Review {
   id: string;
+  userId: string;
   userName: string;
   text: string;
   rating: number;
-  avatar: string;
-  createdAt?: number;
+  avatar: string | null;
 }
 
 export default function ReviewsSlider() {
@@ -23,10 +23,30 @@ export default function ReviewsSlider() {
 
   useEffect(() => {
     const q = query(collection(db, "reviews"), orderBy("createdAt", "desc"), limit(10));
-    getDocs(q).then((snapshot) => {
-      setReviews(
-        snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Omit<Review, "id">) }))
+    getDocs(q).then(async (snapshot) => {
+      const raw = snapshot.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as { userId: string; text: string; rating: number }),
+      }));
+
+      const enriched = await Promise.all(
+        raw.map(async (r) => {
+          let userName = "Клієнт";
+          let avatar: string | null = null;
+          try {
+            const userSnap = await getDoc(doc(db, "users", r.userId));
+            if (userSnap.exists()) {
+              const u = userSnap.data() as { displayName?: string; photoURL?: string | null };
+              userName = u.displayName ?? userName;
+              avatar = u.photoURL ?? null;
+            }
+          } catch {
+          }
+          return { ...r, userName, avatar };
+        })
       );
+
+      setReviews(enriched);
     });
   }, []);
 
@@ -75,7 +95,7 @@ export default function ReviewsSlider() {
             <div className={styles.footer}>
               <div className={styles.user}>
                 <Image
-                  src={review.avatar}
+                  src={review.avatar ?? "/icons/avatar-placeholder.png"}
                   alt={review.userName}
                   width={36}
                   height={36}
@@ -86,7 +106,7 @@ export default function ReviewsSlider() {
                   <span>клієнт</span>
                 </div>
               </div>
-              <span className={styles.stars}>{"★".repeat(review.rating)}</span>
+              <span className={styles.stars}>{"★".repeat(Math.round(review.rating)).padEnd(5, "☆")}</span>
             </div>
           </article>
         ))}

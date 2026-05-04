@@ -4,6 +4,7 @@ export type Product = {
   price: number
   image: string
   rating: number
+  stock?: number
   categoryId?: string
   color?: string
   type?: string
@@ -37,6 +38,7 @@ export type Order = {
 export type Review = {
   id: string
   userId: string
+  productId: string
   text: string
   rating: number
   createdAt: unknown

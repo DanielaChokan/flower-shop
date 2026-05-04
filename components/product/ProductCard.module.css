@@ -1,3 +1,14 @@
+.cardLink {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.cardTitleLink {
+    text-decoration: none;
+    color: inherit;
+}
+
 .card {
     background: var(--secondary-light);
     border-radius: 16px;

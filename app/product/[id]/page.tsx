@@ -1,13 +1,23 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { use } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import {
+	doc, getDoc, collection, getDocs, query, where, limit,
+	addDoc, serverTimestamp, updateDoc, orderBy,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import products from "@/modules/mock/products.json";
+import { useCart } from "@/modules/cart/CartContext";
+import { useAuth } from "@/modules/auth/AuthContext";
+import type { Product, Review } from "@/lib/api";
 import styles from "./page.module.css";
 
 type ProductPageProps = {
-	params: {
-		id: string;
-	};
+	params: Promise<{ id: string }>;
 };
 
 const getStars = (rating: number) => {
@@ -15,9 +25,136 @@ const getStars = (rating: number) => {
 	return "★".repeat(rounded).padEnd(5, "☆");
 };
 
+type ReviewWithUser = Review & { userName: string; avatar: string | null };
+
 export default function ProductPage({ params }: ProductPageProps) {
-	const product = products.find((item) => item.id === params.id) ?? products[0];
-	const related = products.filter((item) => item.id !== product.id).slice(0, 4);
+	const { id } = use(params);
+	const [product, setProduct] = useState<Product | null>(null);
+	const [related, setRelated] = useState<Product[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [quantity, setQuantity] = useState(1);
+	const [favourited, setFavourited] = useState(false);
+	const [reviews, setReviews] = useState<ReviewWithUser[]>([]);
+	const [reviewText, setReviewText] = useState("");
+	const [reviewRating, setReviewRating] = useState(5);
+	const [submitting, setSubmitting] = useState(false)
+	const { addItem, updateQuantity } = useCart();
+	const { user, openAuth } = useAuth();
+
+	const loadReviews = async () => {
+		const q = query(
+			collection(db, "reviews"),
+			where("productId", "==", id),
+			orderBy("createdAt", "desc")
+		);
+		const snap = await getDocs(q);
+		const raw = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Review, "id">) }));
+		const enriched = await Promise.all(
+			raw.map(async (r) => {
+				let userName = "Клієнт";
+				let avatar: string | null = null;
+				try {
+					const userSnap = await getDoc(doc(db, "users", r.userId));
+					if (userSnap.exists()) {
+						const u = userSnap.data() as { displayName?: string; photoURL?: string | null };
+						userName = u.displayName ?? userName;
+						avatar = u.photoURL ?? null;
+					}
+				} catch { }
+				return { ...r, userName, avatar };
+			})
+		);
+		setReviews(enriched);
+	};
+
+	useEffect(() => {
+		setLoading(true);
+		(async () => {
+			const docSnap = await getDoc(doc(db, "products", id));
+			if (!docSnap.exists()) {
+				setLoading(false);
+				return;
+			}
+			const current = { id: docSnap.id, ...(docSnap.data() as Omit<Product, "id">) };
+			setProduct(current);
+
+			const relatedQuery = query(
+				collection(db, "products"),
+				where("categoryId", "==", current.categoryId ?? ""),
+				limit(5)
+			);
+			const relatedSnap = await getDocs(relatedQuery);
+			const relatedItems = relatedSnap.docs
+				.map((d) => ({ id: d.id, ...(d.data() as Omit<Product, "id">) }))
+				.filter((p) => p.id !== id)
+				.slice(0, 4);
+			setRelated(relatedItems);
+
+			await loadReviews();
+			setLoading(false);
+		})();
+	}, [id]);
+
+	const handleSubmitReview = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!user) { openAuth(); return; }
+		if (!reviewText.trim()) return;
+		setSubmitting(true);
+		try {
+			await addDoc(collection(db, "reviews"), {
+				productId: id,
+				userId: user.uid,
+				text: reviewText.trim(),
+				rating: reviewRating,
+				createdAt: serverTimestamp(),
+			});
+
+			const reviewsSnap = await getDocs(
+				query(collection(db, "reviews"), where("productId", "==", id))
+			);
+			const allRatings = reviewsSnap.docs.map((d) => (d.data() as { rating: number }).rating);
+			const avg = allRatings.reduce((a, b) => a + b, 0) / allRatings.length;
+			await updateDoc(doc(db, "products", id), { rating: Math.round(avg * 10) / 10 });
+
+			setProduct((prev) => prev ? { ...prev, rating: Math.round(avg * 10) / 10 } : prev);
+			setReviewText("");
+			setReviewRating(5);
+			await loadReviews();
+		} finally {
+			setSubmitting(false);
+		}
+	};
+
+	const handleAddToCart = () => {
+		if (!user) { openAuth(); return; }
+		if (!product) return;
+		addItem({ id: product.id, name: product.name, price: product.price, image: product.image, rating: product.rating });
+		if (quantity > 1) updateQuantity(product.id, quantity);
+	};
+
+	if (loading) {
+		return (
+			<div className={styles.page}>
+				<Header />
+				<main className={styles.main}>
+					<p style={{ textAlign: "center", padding: "60px 0", color: "var(--muted)" }}>Завантаження...</p>
+				</main>
+				<Footer />
+			</div>
+		);
+	}
+
+	if (!product) {
+		return (
+			<div className={styles.page}>
+				<Header />
+				<main className={styles.main}>
+					<p style={{ textAlign: "center", padding: "60px 0", color: "var(--muted)" }}>Товар не знайдено</p>
+				</main>
+				<Footer />
+			</div>
+		);
+	}
 
 	return (
 		<div className={styles.page}>
@@ -43,63 +180,157 @@ export default function ProductPage({ params }: ProductPageProps) {
 							<span className={styles.stars}>
 								{getStars(product.rating)}
 							</span>
-							<span className={styles.reviews}>(12 відгуків)</span>
+							<span className={styles.reviews}>
+								({reviews.length} {reviews.length === 1 ? "відгук" : reviews.length >= 2 && reviews.length <= 4 ? "відгуки" : "відгуків"})
+							</span>
 						</div>
+						<span className={product.stock === undefined || product.stock > 0 ? styles.inStock : styles.outOfStock}>
+							{product.stock === undefined || product.stock > 0 ? "В наявності" : "Немає в наявності"}
+						</span>
+						{product.description && (
+							<p className={styles.description}>{product.description}</p>
+						)}
 						<p className={styles.price}>{product.price} грн.</p>
 						<div className={styles.controls}>
-							<div className={styles.counter}>
-								<button type="button" aria-label="Зменшити">
-									−
-								</button>
-								<span>1</span>
-								<button type="button" aria-label="Збільшити">
-									+
+							<div className={styles.counterCartRow}>
+								<div className={styles.counter}>
+									<button
+										type="button"
+										aria-label="Зменшити"
+										className={styles.counterBtn}
+										onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+									>
+										−
+									</button>
+									<span className={styles.counterVal}>{quantity}</span>
+									<button
+										type="button"
+										aria-label="Збільшити"
+										className={styles.counterBtn}
+										onClick={() => setQuantity((q) => q + 1)}
+									>
+										+
+									</button>
+								</div>
+								<button type="button" className={styles.cartButton} onClick={handleAddToCart}>
+									В кошик
 								</button>
 							</div>
-							<button type="button" className={styles.cartButton}>
-								В кошик
+							<button
+								type="button"
+								className={`${styles.favourite}${favourited ? ` ${styles.favouriteActive}` : ""}`}
+								onClick={() => setFavourited((v) => !v)}
+								aria-label="Додати до обраного"
+							>
+								<svg viewBox="0 0 24 24" aria-hidden="true">
+									<path d="M12 21C12 21 3 13.5 3 8a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.5-9 13-9 13z" />
+								</svg>
+								Додати до обраного
 							</button>
-						</div>
-
-						<div className={styles.features}>
-							<div>
-								<span className={styles.featureIcon}>+</span>
-								<p>Доставка 24/7</p>
-							</div>
-							<div>
-								<span className={styles.featureIcon}>+</span>
-								<p>Гарантія свіжості</p>
-							</div>
 						</div>
 					</div>
 				</section>
 
-				<section className={styles.related}>
-					<h2>Вас також може зацікавити</h2>
-					<div className={styles.relatedGrid}>
-						{related.map((item) => (
-							<article key={item.id} className={styles.relatedCard}>
-								<div className={styles.relatedImage}>
-									<Image
-										src={item.image}
-										alt={item.name}
-										fill
-										sizes="(max-width: 900px) 45vw, 200px"
-									/>
+				{related.length > 0 && (
+					<section className={styles.related}>
+						<h2>Вас також може зацікавити</h2>
+						<div className={styles.relatedGrid}>
+							{related.map((item) => (
+								<Link key={item.id} href={`/product/${item.id}`} className={styles.relatedCardLink}>
+									<article className={styles.relatedCard}>
+										<div className={styles.relatedImage}>
+											<Image
+												src={item.image}
+												alt={item.name}
+												fill
+												sizes="(max-width: 900px) 45vw, 200px"
+											/>
+										</div>
+										<div className={styles.relatedBody}>
+											<h3>{item.name}</h3>
+											<p className={styles.relatedPrice}>
+												{item.price} грн.
+											</p>
+											<p className={styles.relatedStars}>
+												{getStars(item.rating)}
+											</p>
+										</div>
+									</article>
+								</Link>
+							))}
+						</div>
+					</section>
+				)}
+
+				<section className={styles.reviewsSection}>
+					<h2>Відгуки</h2>
+
+					{reviews.length === 0 && (
+						<p className={styles.noReviews}>Поки немає відгуків. Будьте першим!</p>
+					)}
+
+					{reviews.length > 0 && (
+						<div className={styles.reviewsList}>
+							{reviews.map((r) => (
+								<div key={r.id} className={styles.reviewCard}>
+									<div className={styles.reviewHeader}>
+										<Image
+											src={r.avatar ?? "/icons/avatar-placeholder.png"}
+											alt={r.userName}
+											width={36}
+											height={36}
+											className={styles.reviewAvatar}
+										/>
+										<div>
+											<strong className={styles.reviewAuthor}>{r.userName}</strong>
+											<span className={styles.reviewStars}>{getStars(r.rating)}</span>
+										</div>
+									</div>
+									<p className={styles.reviewText}>{r.text}</p>
 								</div>
-								<div className={styles.relatedBody}>
-									<h3>{item.name}</h3>
-									<p className={styles.relatedPrice}>
-										{item.price} грн.
-									</p>
-									<p className={styles.relatedStars}>
-										{getStars(item.rating)}
-									</p>
-									<button type="button">Додати до обраного</button>
-								</div>
-							</article>
-						))}
-					</div>
+							))}
+						</div>
+					)}
+
+					{!user && (
+						<p className={styles.loginPrompt}>
+							<button type="button" className={styles.loginLink} onClick={openAuth}>
+								Увійдіть
+							</button>{" "}
+							щоб залишити відгук
+						</p>
+					)}
+
+					{user && (
+						<form className={styles.reviewForm} onSubmit={handleSubmitReview}>
+							<h3>Залишити відгук</h3>
+							<div className={styles.ratingSelect}>
+								<span>Оцінка:</span>
+								{[1, 2, 3, 4, 5].map((star) => (
+									<button
+										key={star}
+										type="button"
+										className={`${styles.starBtn}${reviewRating >= star ? ` ${styles.starActive}` : ""}`}
+										onClick={() => setReviewRating(star)}
+										aria-label={`${star} зірок`}
+									>
+										★
+									</button>
+								))}
+							</div>
+							<textarea
+								className={styles.reviewTextarea}
+								value={reviewText}
+								onChange={(e) => setReviewText(e.target.value)}
+								placeholder="Ваш відгук..."
+								rows={4}
+								required
+							/>
+							<button type="submit" className={styles.reviewSubmit} disabled={submitting}>
+								{submitting ? "Надсилання..." : "Надіслати відгук"}
+							</button>
+						</form>
+					)}
 				</section>
 			</main>
 
