@@ -14,6 +14,11 @@ export default function Header() {
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
 
+  const handleProfileClick = () => {
+    if (!user) { openAuth(); return; }
+    router.push("/profile");
+  };
+
   const handleFavouritesClick = () => {
     if (!user) { openAuth(); return; }
     router.push("/favourites");
@@ -109,24 +114,24 @@ export default function Header() {
           <span>Кошик</span>
         </button>
         {user ? (
-          <button type="button" className={styles.action} onClick={logout}>
-            {user.photoURL ? (
-              <img
-                src={user.photoURL}
-                alt={user.displayName ?? "Профіль"}
-                width={32}
-                height={32}
-                className={styles.avatar}
-              />
-            ) : (
-              <div className={styles.avatarFallback}>
-                {(user.displayName ?? user.email ?? "?")[0].toUpperCase()}
-              </div>
-            )}
-            <span className={styles.userName}>
-              {user.displayName?.split(" ")[0] ?? "Профіль"}
-            </span>
-          </button>
+          <button type="button" className={styles.action} onClick={handleProfileClick}>
+          {user.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt={user.displayName ?? "Профіль"}
+              width={32}
+              height={32}
+              className={styles.avatar}
+            />
+          ) : (
+            <div className={styles.avatarFallback}>
+              {(user.displayName ?? user.email ?? "?")[0].toUpperCase()}
+            </div>
+          )}
+          <span className={styles.userName}>
+            {user.displayName?.split(" ")[0] ?? "Профіль"}
+          </span>
+        </button>
         ) : (
           <button type="button" className={styles.action} onClick={openAuth}>
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

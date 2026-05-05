@@ -30,8 +30,11 @@ export type Order = {
   items: OrderItem[]
   totalPrice: number
   status: OrderStatus
+  recipient?: string
+  phone?: string
   deliveryTime?: string
   deliveryAddress?: string
+  comment?: string
   createdAt: unknown
 }
 
@@ -56,6 +59,6 @@ export type AppUser = {
   role: "admin" | "user"
   createdAt: unknown
   photoURL?: string | null
-  address?: string
+  addresses?: string[]
   customerType?: CustomerType
 }

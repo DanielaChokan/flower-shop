@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { useState, useEffect } from "react";
+import { addDoc, collection, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/modules/auth/AuthContext";
 import { useCart } from "@/modules/cart/CartContext";
@@ -27,6 +27,19 @@ export default function CheckoutModal({ onClose }: Props) {
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<"recipient" | "phone" | "address", string>>>({});
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
+
+  const [savedAddresses, setSavedAddresses] = useState<string[]>([]);
+  const [selectedSavedAddress, setSelectedSavedAddress] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    getDoc(doc(db, "users", user.uid)).then((snap) => {
+      if (snap.exists()) {
+        const addrs: string[] = snap.data().addresses ?? [];
+        setSavedAddresses(addrs);
+      }
+    });
+  }, [user]);
 
   const handlePay = (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,12 +170,37 @@ export default function CheckoutModal({ onClose }: Props) {
               </div>
               <div className={styles.field}>
                 <label htmlFor="co-address">Адреса доставки *</label>
+                {savedAddresses.length > 0 && (
+                  <div className={styles.savedAddresses}>
+                    {savedAddresses.map((addr, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        className={`${styles.savedAddressChip} ${
+                          selectedSavedAddress === addr ? styles.savedAddressChipActive : ""
+                        }`}
+                        onClick={() => {
+                          const next = selectedSavedAddress === addr ? null : addr;
+                          setSelectedSavedAddress(next);
+                          setAddress(next ?? "");
+                          setFieldErrors((p) => ({ ...p, address: undefined }));
+                        }}
+                      >
+                        {addr}
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <input
                   id="co-address"
                   type="text"
                   placeholder="м. Київ, вул. Хрещатик, 1, кв. 5"
                   value={address}
-                  onChange={(e) => { setAddress(e.target.value); setFieldErrors((p) => ({ ...p, address: undefined })); }}
+                  onChange={(e) => {
+                    setAddress(e.target.value);
+                    setSelectedSavedAddress(null);
+                    setFieldErrors((p) => ({ ...p, address: undefined }));
+                  }}
                   className={fieldErrors.address ? styles.inputError : ""}
                 />
                 {fieldErrors.address && <span className={styles.fieldError}>{fieldErrors.address}</span>}

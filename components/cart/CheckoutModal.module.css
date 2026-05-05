@@ -122,6 +122,46 @@
   color: var(--muted);
 }
 
+.savedAddresses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.savedAddressChip {
+  padding: 5px 12px;
+  border: 1px solid var(--secondary-dark);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--muted-warm);
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.4;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  max-width: 100%;
+  word-break: break-word;
+}
+
+.savedAddressChip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--secondary-light);
+}
+
+.savedAddressChipActive {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+
+.savedAddressChipActive:hover {
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
+  color: #fff;
+}
+
 .error {
   font-size: 13px;
   color: #c0392b;
