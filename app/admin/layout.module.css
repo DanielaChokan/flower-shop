@@ -1,0 +1,69 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--neutral-background, #f7f7f7);
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--primary-dark, #3B0A15);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  min-height: 0;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 12px;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.navLink:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.navLinkActive {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-weight: 600;
+}
+
+.navIcon {
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.navLinkActive .navIcon {
+  opacity: 1;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  padding: 32px 36px;
+  overflow-y: auto;
+}

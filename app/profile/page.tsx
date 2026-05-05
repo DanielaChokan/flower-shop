@@ -152,7 +152,6 @@ export default function ProfilePage() {
       setAddresses(updated);
       setProfile((prev) => (prev ? { ...prev, addresses: updated } : prev));
     } catch {
-      /* silent */
     }
   };
 

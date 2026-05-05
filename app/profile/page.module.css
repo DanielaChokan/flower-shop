@@ -214,8 +214,6 @@
     padding: 2px 0;
 }
 
-/* Orders table */
-
 .tableWrapper {
     overflow-x: auto;
 }
@@ -372,8 +370,6 @@
     color: #fff;
 }
 
-/* Order details modal */
-
 .modalBackdrop {
     position: fixed;
     inset: 0;
@@ -521,20 +517,4 @@
     font-size: 17px;
     font-weight: 700;
     color: var(--primary);
-}
-
-@media (max-width: 900px) {
-    .main {
-        padding: 28px 20px 48px;
-    }
-
-    .grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 480px) {
-    .main {
-        padding: 20px 12px 40px;
-    }
 }

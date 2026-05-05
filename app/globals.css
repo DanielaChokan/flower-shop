@@ -19,6 +19,10 @@
   --neutral-text: #3f3a3c;
   --border-subtle: #f0ecee;
   --muted-warm: #6b6467;
+  --input-border: #e8e0e4;
+  --row-hover: #fdf8fa;
+  --danger: #c62828;
+  --danger-dark: #b71c1c;
 }
 
 html {

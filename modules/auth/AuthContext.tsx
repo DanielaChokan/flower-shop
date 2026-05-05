@@ -47,10 +47,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const role = snap.data()?.role ?? "user";
         setIsAdmin(role === "admin");
         document.cookie = `__role=${role}; path=/; SameSite=Strict`;
+        if (role === "admin" && !window.location.pathname.startsWith("/admin")) {
+          window.location.replace("/admin");
+        }
       } else {
         setIsAdmin(false);
         document.cookie = "__session=; path=/; max-age=0";
         document.cookie = "__role=; path=/; max-age=0";
+        if (window.location.pathname.startsWith("/admin")) {
+          window.location.replace("/");
+        }
       }
       setLoading(false);
     });
@@ -94,13 +100,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const provider = new GoogleAuthProvider();
     const credential = await signInWithPopup(auth, provider);
     const u = credential.user;
-    await setDoc(doc(db, "users", u.uid), {
+    const userRef = doc(db, "users", u.uid);
+    const existing = await getDoc(userRef);
+    await setDoc(userRef, {
       uid: u.uid,
       email: u.email,
       displayName: u.displayName,
       photoURL: u.photoURL,
-      role: "user",
-      createdAt: serverTimestamp(),
+      ...(existing.exists() ? {} : { role: "user", createdAt: serverTimestamp() }),
     }, { merge: true });
     setIsAuthOpen(false);
   }, []);
