@@ -62,7 +62,7 @@ export default function CheckoutModal({ onClose }: Props) {
     setLoading(true);
     setSubmitError("");
     try {
-      await addDoc(collection(db, "orders"), {
+      const orderRef = await addDoc(collection(db, "orders"), {
         userId: user.uid,
         items: items.map((i) => ({ productId: i.id, quantity: i.quantity, price: i.price })),
         totalPrice: total,
@@ -74,6 +74,27 @@ export default function CheckoutModal({ onClose }: Props) {
         comment: comment.trim() || null,
         createdAt: serverTimestamp(),
       });
+
+      if (user.email) {
+        fetch("/api/email/order-confirmed", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            to: user.email,
+            data: {
+              orderId: orderRef.id,
+              recipient: recipient.trim(),
+              phone: phone.trim(),
+              deliveryAddress: address.trim(),
+              deliveryTime: deliveryTime.trim() || null,
+              comment: comment.trim() || null,
+              items: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
+              totalPrice: total,
+            },
+          }),
+        }).catch(() => {});
+      }
+
       clearCart();
       setStep("success");
     } catch {
