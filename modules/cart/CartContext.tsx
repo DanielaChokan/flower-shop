@@ -1,6 +1,9 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useAuth } from "@/modules/auth/AuthContext";
 
 export type CartItem = {
   id: string;
@@ -10,6 +13,8 @@ export type CartItem = {
   rating: number;
   quantity: number;
 };
+
+type StoredCartItem = { id: string; quantity: number };
 
 type CartContextType = {
   items: CartItem[];
@@ -27,8 +32,41 @@ type CartContextType = {
 const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const isSyncing = useRef(false);
+
+  useEffect(() => {
+    if (!user) {
+      setItems([]);
+      return;
+    }
+    isSyncing.current = true;
+    getDoc(doc(db, "users", user.uid)).then(async (snap) => {
+      const stored: StoredCartItem[] = Array.isArray(snap.data()?.cart) ? snap.data()!.cart : [];
+      if (stored.length === 0) {
+        setItems([]);
+        isSyncing.current = false;
+        return;
+      }
+      const enriched = await Promise.all(
+        stored.map(async (s) => {
+          const productSnap = await getDoc(doc(db, "products", s.id));
+          if (!productSnap.exists()) return null;
+          const p = productSnap.data() as { name: string; price: number; image: string; rating: number };
+          return { id: s.id, name: p.name, price: p.price, image: p.image, rating: p.rating, quantity: s.quantity };
+        })
+      );
+      setItems(enriched.filter(Boolean) as CartItem[]);
+      isSyncing.current = false;
+    });
+  }, [user]);
+
+  const saveToFirestore = useCallback((nextItems: CartItem[], uid: string) => {
+    const stored: StoredCartItem[] = nextItems.map(({ id, quantity }) => ({ id, quantity }));
+    updateDoc(doc(db, "users", uid), { cart: stored }).catch(() => {});
+  }, []);
 
   const openCart = useCallback(() => setIsOpen(true), []);
   const closeCart = useCallback(() => setIsOpen(false), []);
@@ -37,29 +75,40 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addItem = useCallback((product: Omit<CartItem, "quantity">) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.id === product.id);
+      let next: CartItem[];
       if (existing) {
-        return prev.map((i) =>
+        next = prev.map((i) =>
           i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
         );
+      } else {
+        next = [...prev, { ...product, quantity: 1 }];
       }
-      return [...prev, { ...product, quantity: 1 }];
+      if (user) saveToFirestore(next, user.uid);
+      return next;
     });
     setIsOpen(true);
-  }, []);
+  }, [user, saveToFirestore]);
 
   const removeItem = useCallback((id: string) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
-  }, []);
+    setItems((prev) => {
+      const next = prev.filter((i) => i.id !== id);
+      if (user) saveToFirestore(next, user.uid);
+      return next;
+    });
+  }, [user, saveToFirestore]);
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
-    if (quantity <= 0) {
-      setItems((prev) => prev.filter((i) => i.id !== id));
-    } else {
-      setItems((prev) =>
-        prev.map((i) => (i.id === id ? { ...i, quantity } : i))
-      );
-    }
-  }, []);
+    setItems((prev) => {
+      let next: CartItem[];
+      if (quantity <= 0) {
+        next = prev.filter((i) => i.id !== id);
+      } else {
+        next = prev.map((i) => (i.id === id ? { ...i, quantity } : i));
+      }
+      if (user) saveToFirestore(next, user.uid);
+      return next;
+    });
+  }, [user, saveToFirestore]);
 
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);

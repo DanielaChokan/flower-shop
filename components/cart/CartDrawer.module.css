@@ -16,7 +16,7 @@
   top: 0;
   right: 0;
   height: 100%;
-  width: 380px;
+  width: 520px;
   max-width: 100vw;
   background: var(--background);
   z-index: 101;
@@ -93,6 +93,45 @@
 .emptyIcon {
   font-size: 48px;
   opacity: 0.5;
+}
+
+.body article {
+  flex-direction: row !important;
+  padding: 12px !important;
+  gap: 12px !important;
+  align-items: center;
+}
+
+.body article > a:first-child {
+  flex-shrink: 0;
+  width: 90px !important;
+  height: 90px !important;
+}
+
+.body article > a:first-child > div {
+  width: 90px !important;
+  height: 90px !important;
+  padding-top: 0 !important;
+  position: relative;
+  border-radius: 10px !important;
+}
+
+.body article > div:last-child {
+  flex: 1;
+  gap: 4px !important;
+}
+
+.body article > div:last-child h3 {
+  font-size: 14px !important;
+  line-height: 1.3;
+}
+
+.body article > div:last-child p {
+  font-size: 13px !important;
+}
+
+.body article:hover {
+  background: var(--secondary) !important;
 }
 
 .cartItem {
