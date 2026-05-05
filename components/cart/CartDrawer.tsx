@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { useCart } from "@/modules/cart/CartContext";
 import ProductCard from "@/components/product/ProductCard";
+import CheckoutModal from "./CheckoutModal";
 import styles from "./CartDrawer.module.css";
 
 export default function CartDrawer() {
   const { isOpen, closeCart, items, updateQuantity, total } = useCart();
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   if (!isOpen) return null;
 
@@ -54,8 +57,12 @@ export default function CartDrawer() {
               <span>До сплати:</span>
               <span className={styles.totalAmount}>{total} грн.</span>
             </div>
-            <button type="button" className={styles.checkoutBtn}>
-              Перейти до оплати
+            <button
+              type="button"
+              className={styles.checkoutBtn}
+              onClick={() => setCheckoutOpen(true)}
+            >
+              Перейти до оформлення замовлення
             </button>
             <button
               type="button"
@@ -67,6 +74,7 @@ export default function CartDrawer() {
           </div>
         )}
       </aside>
+      {checkoutOpen && <CheckoutModal onClose={() => setCheckoutOpen(false)} />}
     </>
   );
 }

@@ -25,6 +25,7 @@ type CartContextType = {
   addItem: (product: Omit<CartItem, "quantity">) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void;
   total: number;
   itemCount: number;
 };
@@ -110,6 +111,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     });
   }, [user, saveToFirestore]);
 
+  const clearCart = useCallback(() => {
+    setItems([]);
+    if (user) saveToFirestore([], user.uid);
+  }, [user, saveToFirestore]);
+
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
@@ -124,6 +130,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         addItem,
         removeItem,
         updateQuantity,
+        clearCart,
         total,
         itemCount,
       }}
