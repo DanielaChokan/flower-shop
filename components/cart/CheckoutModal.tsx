@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { addDoc, collection, serverTimestamp, doc, getDoc } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp, doc, getDoc, getDocs, query, where, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/modules/auth/AuthContext";
 import { useCart } from "@/modules/cart/CartContext";
 import { checkoutFormSchema } from "@/schemas/order.schema";
+import { classifyCustomer, buildCustomerFeatures, REGULAR_CUSTOMER_DISCOUNT } from "@/lib/naiveBayes";
+import { CustomerType } from "@/lib/api";
 import styles from "./CheckoutModal.module.css";
 
 type Props = {
@@ -30,6 +32,8 @@ export default function CheckoutModal({ onClose }: Props) {
 
   const [savedAddresses, setSavedAddresses] = useState<string[]>([]);
   const [selectedSavedAddress, setSelectedSavedAddress] = useState<string | null>(null);
+  const [customerType, setCustomerType] = useState<CustomerType | null>(null);
+  const [isRegular, setIsRegular] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -38,6 +42,17 @@ export default function CheckoutModal({ onClose }: Props) {
         const addrs: string[] = snap.data().addresses ?? [];
         setSavedAddresses(addrs);
       }
+    });
+
+    getDocs(query(collection(db, "orders"), where("userId", "==", user.uid))).then((snap) => {
+      const orders = snap.docs.map((d) => ({
+        totalPrice: (d.data().totalPrice as number) ?? 0,
+        comment: d.data().comment as string | null,
+      }));
+      const features = buildCustomerFeatures(orders);
+      const result = classifyCustomer(features);
+      setCustomerType(result.customerType);
+      setIsRegular(result.customerType === "regularCustomer");
     });
   }, [user]);
 
@@ -57,6 +72,9 @@ export default function CheckoutModal({ onClose }: Props) {
     setStep("confirm");
   };
 
+  const discount = isRegular ? REGULAR_CUSTOMER_DISCOUNT : 0;
+  const discountedTotal = Math.round(total * (1 - discount));
+
   const handleConfirm = async () => {
     if (!user) return;
     setLoading(true);
@@ -65,7 +83,7 @@ export default function CheckoutModal({ onClose }: Props) {
       const orderRef = await addDoc(collection(db, "orders"), {
         userId: user.uid,
         items: items.map((i) => ({ productId: i.id, quantity: i.quantity, price: i.price })),
-        totalPrice: total,
+        totalPrice: discountedTotal,
         status: "pending",
         recipient: recipient.trim(),
         phone: phone.trim(),
@@ -74,6 +92,16 @@ export default function CheckoutModal({ onClose }: Props) {
         comment: comment.trim() || null,
         createdAt: serverTimestamp(),
       });
+
+      const ordersSnap = await getDocs(query(collection(db, "orders"), where("userId", "==", user.uid)));
+      const allOrders = ordersSnap.docs.map((d) => ({
+        totalPrice: (d.data().totalPrice as number) ?? 0,
+        comment: d.data().comment as string | null,
+      }));
+      const updatedFeatures = buildCustomerFeatures([...allOrders, { totalPrice: discountedTotal, comment: comment.trim() || null }]);
+      const updatedResult = classifyCustomer(updatedFeatures);
+      await updateDoc(doc(db, "users", user.uid), { customerType: updatedResult.customerType });
+      void orderRef;
 
       if (user.email) {
         fetch("/api/email/order-confirmed", {
@@ -144,7 +172,10 @@ export default function CheckoutModal({ onClose }: Props) {
               <li><span>Адреса</span><strong>{address}</strong></li>
               {deliveryTime && <li><span>Час доставки</span><strong>{deliveryTime}</strong></li>}
               {comment && <li><span>Коментар</span><strong>{comment}</strong></li>}
-              <li className={styles.confirmTotal}><span>Сума замовлення</span><strong>{total} грн.</strong></li>
+              {isRegular && (
+                <li><span>Знижка (постійний клієнт)</span><strong style={{ color: "#1a7a4a" }}>−{Math.round(total * discount)} грн.</strong></li>
+              )}
+              <li className={styles.confirmTotal}><span>Сума замовлення</span><strong>{discountedTotal} грн.</strong></li>
             </ul>
             {submitError && <p className={styles.error}>{submitError}</p>}
             <button
@@ -251,11 +282,21 @@ export default function CheckoutModal({ onClose }: Props) {
 
               <div className={styles.payRow}>
                 <div className={styles.payTotal}>
+                  {isRegular && (
+                    <span className={styles.discountBadge}>−10% знижка для постійних клієнтів</span>
+                  )}
                   <span>До сплати</span>
-                  <strong>{total} грн.</strong>
+                  {isRegular ? (
+                    <strong>
+                      <s style={{ fontWeight: 400, fontSize: 13, color: "var(--muted)", marginRight: 6 }}>{total} грн.</s>
+                      {discountedTotal} грн.
+                    </strong>
+                  ) : (
+                    <strong>{total} грн.</strong>
+                  )}
                 </div>
                 <button type="submit" className={styles.submitBtn}>
-                  Сплатити {total} грн.
+                  Сплатити {discountedTotal} грн.
                 </button>
               </div>
             </form>

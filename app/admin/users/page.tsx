@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AppUser } from "@/lib/api";
+import { CUSTOMER_TYPE_LABELS } from "@/lib/naiveBayes";
 import styles from "../admin.module.css";
 
 function formatDate(ts: unknown): string {
@@ -129,6 +130,7 @@ export default function AdminUsersPage() {
                 <th>Email</th>
                 <th>Телефон</th>
                 <th>Роль</th>
+                <th>Тип клієнта</th>
                 <th>Зареєстрований</th>
                 <th>Дії</th>
               </tr>
@@ -167,6 +169,19 @@ export default function AdminUsersPage() {
                     <span className={`${styles.badge} ${u.role === "admin" ? styles.badgeAdmin : styles.badgeUser}`}>
                       {u.role === "admin" ? "Адмін" : "Користувач"}
                     </span>
+                  </td>
+                  <td>
+                    {u.customerType ? (
+                      <span className={`${styles.badge} ${
+                        u.customerType === "regularCustomer" ? styles.badgeConfirmed
+                        : u.customerType === "giftOrder" ? styles.badgePending
+                        : styles.badgeCancelled
+                      }`}>
+                        {CUSTOMER_TYPE_LABELS[u.customerType]}
+                      </span>
+                    ) : (
+                      <span style={{ color: "var(--muted)", fontSize: 12 }}>—</span>
+                    )}
                   </td>
                   <td style={{ fontSize: 13, color: "var(--muted-warm)" }}>{formatDate(u.createdAt)}</td>
                   <td>

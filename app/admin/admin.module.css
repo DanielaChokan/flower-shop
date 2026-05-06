@@ -320,3 +320,23 @@
   background: #f0f4f8;
   color: #445566;
 }
+
+.badgePending {
+  background: #fff8e1;
+  color: #c47d00;
+}
+
+.badgeConfirmed {
+  background: #e8f8f1;
+  color: #1a7a4a;
+}
+
+.badgeDelivered {
+  background: #e8f0fb;
+  color: #1a4a7a;
+}
+
+.badgeCancelled {
+  background: #fdf0ef;
+  color: #c0392b;
+}
