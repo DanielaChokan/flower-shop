@@ -12,9 +12,12 @@ export type CartItem = {
   image: string;
   rating: number;
   quantity: number;
+  isCustom?: boolean;
 };
 
-type StoredCartItem = { id: string; quantity: number };
+type StoredCartItem =
+  | { id: string; quantity: number; isCustom?: false }
+  | { id: string; quantity: number; isCustom: true; name: string; price: number; image: string; rating: number };
 
 type CartContextType = {
   items: CartItem[];
@@ -23,6 +26,7 @@ type CartContextType = {
   closeCart: () => void;
   toggleCart: () => void;
   addItem: (product: Omit<CartItem, "quantity">) => void;
+  addBouquet: (bouquet: Omit<CartItem, "quantity" | "isCustom">) => void;
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -53,6 +57,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       const enriched = await Promise.all(
         stored.map(async (s) => {
+          if (s.isCustom) {
+            return { id: s.id, name: s.name, price: s.price, image: s.image, rating: s.rating, quantity: s.quantity, isCustom: true };
+          }
           const productSnap = await getDoc(doc(db, "products", s.id));
           if (!productSnap.exists()) return null;
           const p = productSnap.data() as { name: string; price: number; image: string; rating: number };
@@ -65,13 +72,35 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const saveToFirestore = useCallback((nextItems: CartItem[], uid: string) => {
-    const stored: StoredCartItem[] = nextItems.map(({ id, quantity }) => ({ id, quantity }));
+    const stored: StoredCartItem[] = nextItems.map((item) => {
+      if (item.isCustom) {
+        return { id: item.id, quantity: item.quantity, isCustom: true as const, name: item.name, price: item.price, image: item.image, rating: item.rating };
+      }
+      return { id: item.id, quantity: item.quantity };
+    });
     updateDoc(doc(db, "users", uid), { cart: stored }).catch(() => {});
   }, []);
 
   const openCart = useCallback(() => setIsOpen(true), []);
   const closeCart = useCallback(() => setIsOpen(false), []);
   const toggleCart = useCallback(() => setIsOpen((prev) => !prev), []);
+
+  const addBouquet = useCallback((bouquet: Omit<CartItem, "quantity" | "isCustom">) => {
+    setItems((prev) => {
+      const existing = prev.find((i) => i.id === bouquet.id);
+      let next: CartItem[];
+      if (existing) {
+        next = prev.map((i) =>
+          i.id === bouquet.id ? { ...i, quantity: i.quantity + 1 } : i
+        );
+      } else {
+        next = [...prev, { ...bouquet, quantity: 1, isCustom: true }];
+      }
+      if (user) saveToFirestore(next, user.uid);
+      return next;
+    });
+    setIsOpen(true);
+  }, [user, saveToFirestore]);
 
   const addItem = useCallback((product: Omit<CartItem, "quantity">) => {
     setItems((prev) => {
@@ -128,6 +157,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         closeCart,
         toggleCart,
         addItem,
+        addBouquet,
         removeItem,
         updateQuantity,
         clearCart,

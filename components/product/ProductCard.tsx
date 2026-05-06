@@ -16,6 +16,7 @@ type ProductCardProps = {
     inCart?: boolean;
     quantity?: number;
     onQuantityChange?: (quantity: number) => void;
+    isCustom?: boolean;
 };
 
 const getStars = (rating: number) => {
@@ -32,6 +33,7 @@ export default function ProductCard({
     inCart = false,
     quantity = 1,
     onQuantityChange,
+    isCustom = false,
 }: ProductCardProps) {
     const { addItem } = useCart();
     const { user, openAuth } = useAuth();
@@ -51,15 +53,20 @@ export default function ProductCard({
 
     return (
         <article className={styles.card}>
-            <Link href={`/product/${id}`} className={styles.cardLink}>
+            <Link href={isCustom ? "/" : `/product/${id}`} className={styles.cardLink}>
                 <div className={styles.imageWrap}>
-                    <Image
-                        src={image}
-                        alt={name}
-                        fill
-                        sizes="(max-width: 900px) 50vw, 240px"
-                    />
-                    {!inCart && (
+                    {isCustom && image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={image} alt={name} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+                    ) : (
+                        <Image
+                            src={image}
+                            alt={name}
+                            fill
+                            sizes="(max-width: 900px) 50vw, 240px"
+                        />
+                    )}
+                    {!inCart && !isCustom && (
                         <button
                             type="button"
                             className={`${styles.heartBtn}${fav ? ` ${styles.heartBtnActive}` : ""}`}
@@ -74,11 +81,12 @@ export default function ProductCard({
                 </div>
             </Link>
             <div className={styles.content}>
-                <Link href={`/product/${id}`} className={styles.cardTitleLink}>
+                {isCustom && <span className={styles.customBadge}>AI Букет</span>}
+                <Link href={isCustom ? "/" : `/product/${id}`} className={styles.cardTitleLink}>
                     <h3>{name}</h3>
                 </Link>
                 <p className={styles.price}>{price} грн.</p>
-                <p className={styles.rating}>{getStars(rating)}</p>
+                {!isCustom && <p className={styles.rating}>{getStars(rating)}</p>}
                 {inCart ? (
                     <div className={styles.quantityRow}>
                         <button

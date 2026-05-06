@@ -273,3 +273,43 @@
 .continueBtn:hover {
   background: var(--secondary-light);
 }
+
+.bouquetItem {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--secondary);
+  border-radius: 14px;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.bouquetImg {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: var(--secondary-light);
+}
+
+.bouquetInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bouquetBadge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
+  background: var(--secondary-light);
+  border: 1px solid var(--secondary);
+  border-radius: 8px;
+  padding: 2px 8px;
+  display: inline-block;
+  width: fit-content;
+}

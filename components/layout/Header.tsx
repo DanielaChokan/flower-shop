@@ -7,11 +7,13 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/modules/cart/CartContext";
 import { useAuth } from "@/modules/auth/AuthContext";
 import { useTheme } from "@/modules/theme/ThemeContext";
+import { useAiChat } from "@/modules/ai/AiChatContext";
 
 export default function Header() {
   const { toggleCart, itemCount } = useCart();
   const { user, isAdmin, openAuth, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { openChat } = useAiChat();
   const router = useRouter();
 
   const handleProfileClick = () => {
@@ -69,6 +71,15 @@ export default function Header() {
       </Link>
       <p className={styles.centerText}>Доставка свіжих квітів 24/7</p>
       <div className={styles.actions}>
+        <button type="button" className={styles.action} onClick={openChat}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none"/>
+            <circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/>
+            <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+          <span>AI Букет</span>
+        </button>
         <button
           type="button"
           className={styles.action}

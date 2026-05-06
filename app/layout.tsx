@@ -10,6 +10,8 @@ import CartDrawer from "@/components/cart/CartDrawer";
 import AuthModalHost from "@/modules/auth/components/AuthModalHost";
 import LoadingGuard from "@/components/UI/LoadingGuard";
 import AuthRequiredListener from "@/components/UI/AuthRequiredListener";
+import { AiChatProvider } from "@/modules/ai/AiChatContext";
+import AiChatDrawer from "@/components/ai/AiChatDrawer";
 
 const inter = Inter({
     variable: "--font-body",
@@ -33,14 +35,17 @@ export default function RootLayout({
                 <AuthProvider>
                     <FavouritesProvider>
                     <CartProvider>
+                    <AiChatProvider>
                         <LoadingGuard>
                             {children}
                         </LoadingGuard>
                         <CartDrawer />
+                        <AiChatDrawer />
                         <AuthModalHost />
                         <Suspense>
                             <AuthRequiredListener />
                         </Suspense>
+                    </AiChatProvider>
                     </CartProvider>
                     </FavouritesProvider>
                 </AuthProvider>
