@@ -85,6 +85,8 @@ type Bouquet = {
 type Message =
     | { type: "bot"; text: string; options?: QuickOption[] }
     | { type: "user"; text: string }
+    | { type: "error"; text: string }
+    | { type: "divider"; text: string }
     | { type: "results"; bouquets: Bouquet[] };
 
 const INTRO: Message = {
@@ -144,22 +146,22 @@ export default function AiChat() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ preferences: newPrefs }),
             })
-                .then((r) => r.json())
-                .then((data) => {
-                    if (data.bouquets) {
-                        const finalMessages: Message[] = [
+                .then(async (r) => {
+                    const data = await r.json();
+                    if (!r.ok || !data.bouquets) {
+                        const errMsg = data.error ?? "На жаль, не вдалося згенерувати букети. Спробуйте ще раз.";
+                        setMessages((prev) => [...prev, { type: "error", text: errMsg }]);
+                    } else {
+                        setMessages((prev) => [
+                            ...prev,
                             { type: "bot", text: "Ось що я створив для тебе:" },
                             { type: "results", bouquets: data.bouquets },
-                        ];
-                        setMessages((prev) => [...prev, ...finalMessages]);
-                    } else {
-                        const errMsg = data.error ?? "На жаль, не вдалося згенерувати букети. Спробуйте ще раз.";
-                        setMessages((prev) => [...prev, { type: "bot", text: errMsg }]);
+                        ]);
                     }
                     setIsDone(true);
                 })
                 .catch(() => {
-                    setMessages((prev) => [...prev, { type: "bot", text: "Виникла помилка. Спробуйте ще раз." }]);
+                    setMessages((prev) => [...prev, { type: "error", text: "Не вдалося зв'язатися із сервером. Перевірте з'єднання та спробуйте ще раз." }]);
                     setIsDone(true);
                 })
                 .finally(() => setIsLoading(false));
@@ -184,7 +186,11 @@ export default function AiChat() {
     };
 
     const handleRestart = () => {
-        setMessages([INTRO, { type: "bot", text: STEPS[0].question, options: STEPS[0].options }]);
+        setMessages((prev) => [
+            ...prev,
+            { type: "divider", text: "Новий підбір" },
+            { type: "bot", text: STEPS[0].question, options: STEPS[0].options },
+        ]);
         setStepIndex(0);
         setPreferences({});
         setInputVal("");
@@ -199,6 +205,7 @@ export default function AiChat() {
             price: b.totalPrice,
             image: b.image ?? b.flowers[0]?.image ?? "",
             rating: 0,
+            flowers: b.flowers.map((f) => ({ id: f.id, name: f.name, quantity: f.quantity, price: f.price })),
         });
         closeChat();
     };
@@ -235,6 +242,23 @@ export default function AiChat() {
                         </div>
                     );
                 }
+                if (msg.type === "divider") {
+                    return (
+                        <div key={i} className={styles.divider}>
+                            <span>{msg.text}</span>
+                        </div>
+                    );
+                }
+                if (msg.type === "error") {
+                    return (
+                        <div key={i} className={`${styles.row} ${styles.rowBot}`}>
+                            <BotAvatar />
+                            <div className={`${styles.bubble} ${styles.bubbleError}`}>
+                                <span className={styles.bubbleErrorIcon}>⚠</span> {msg.text}
+                            </div>
+                        </div>
+                    );
+                }
                 if (msg.type === "results") {
                     return (
                         <div key={i} className={`${styles.row} ${styles.rowBot}`}>
@@ -243,7 +267,10 @@ export default function AiChat() {
                                 {msg.bouquets.map((b, bi) => (
                                     <div key={bi} className={styles.card}>
                                         {b.image ? (
-                                            <img src={b.image} alt={b.title} className={styles.cardImg} />
+                                            <>
+                                                <img src={b.image} alt={b.title} className={styles.cardImg} />
+                                                <p className={styles.cardImgDisclaimer}>Зображення згенеровано для вашої уяви — зовнішній вигляд може відрізнятися.</p>
+                                            </>
                                         ) : (
                                             <div className={styles.cardImgPlaceholder}>
                                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5">
@@ -300,7 +327,7 @@ export default function AiChat() {
 
                 {isDone && (
                     <button className={styles.restartBtn} onClick={handleRestart}>
-                        Підібрати ще раз
+                        Створити нові букети
                     </button>
                 )}
 

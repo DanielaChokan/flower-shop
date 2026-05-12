@@ -307,12 +307,57 @@ export default function AdminOrdersPage() {
                             </thead>
                             <tbody>
                               {order.items.map((item, i) => (
-                                <tr key={i}>
-                                  <td>{productNames[item.productId] ?? item.productId}</td>
-                                  <td>{item.price} грн</td>
-                                  <td>{item.quantity}</td>
-                                  <td>{item.price * item.quantity} грн</td>
-                                </tr>
+                                <Fragment key={i}>
+                                  <tr>
+                                    <td>
+                                      {item.customName ? (
+                                        <span>
+                                          🤖 {item.customName}
+                                        </span>
+                                      ) : (
+                                        productNames[item.productId] ?? item.productId
+                                      )}
+                                    </td>
+                                    <td>{item.price} грн</td>
+                                    <td>{item.quantity}</td>
+                                    <td>{item.price * item.quantity} грн</td>
+                                  </tr>
+                                  {item.customName && item.flowers && item.flowers.length > 0 && (
+                                    <tr className={styles.bouquetCompositionRow}>
+                                      <td colSpan={4}>
+                                        <div className={styles.bouquetComposition}>
+                                          <span className={styles.bouquetCompositionLabel}>Склад букету</span>
+                                          <table className={styles.bouquetTable}>
+                                            <colgroup>
+                                              <col style={{ width: "55%" }} />
+                                              <col style={{ width: "15%" }} />
+                                              <col style={{ width: "15%" }} />
+                                              <col style={{ width: "15%" }} />
+                                            </colgroup>
+                                            <thead>
+                                              <tr>
+                                                <th>Квітка</th>
+                                                <th>Ціна/шт</th>
+                                                <th>Кількість</th>
+                                                <th>Сума</th>
+                                              </tr>
+                                            </thead>
+                                            <tbody>
+                                              {item.flowers.map((f, fi) => (
+                                                <tr key={fi}>
+                                                  <td>{f.name}</td>
+                                                  <td>{f.price} грн</td>
+                                                  <td>{f.quantity} шт</td>
+                                                  <td>{f.price * f.quantity} грн</td>
+                                                </tr>
+                                              ))}
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )}
+                                </Fragment>
                               ))}
                             </tbody>
                           </table>

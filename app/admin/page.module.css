@@ -288,6 +288,61 @@
   color: var(--neutral-dark);
 }
 
+.bouquetCompositionRow td {
+  background: var(--neutral-light, #f7f5f5);
+  padding: 4px 12px 10px 12px !important;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.bouquetComposition {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bouquetCompositionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted, #999);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.bouquetTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.bouquetTable thead tr {
+  background: transparent;
+}
+
+.bouquetTable th {
+  padding: 4px 10px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted, #999);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.bouquetTable td {
+  padding: 5px 10px;
+  color: var(--neutral-dark);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.bouquetTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.bouquetTable tbody tr:hover td {
+  background: rgba(0,0,0,0.02);
+}
+
 .modalOverlay {
   position: fixed;
   inset: 0;

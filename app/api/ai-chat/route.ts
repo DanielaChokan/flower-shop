@@ -31,7 +31,7 @@ async function fetchProducts() {
 }
 
 async function generateBouquetImage(description: string): Promise<string | null> {
-    const imagePrompt = `Realistic professional floral photography, studio soft lighting, clean white background, sharp focus, 8k resolution. EXACT composition: ${description}. Do not add extra flowers or change colors.`;
+    const imagePrompt = `Realistic professional floral photography, studio soft lighting, clean white background, sharp focus, 8k resolution. The bouquet is wrapped in kraft paper or decorative wrapping paper with a satin ribbon bow at the stem. EXACT floral composition: ${description}. Do not add extra flowers or change colors. Show the full bouquet including the wrapped stems and ribbon.`;
     const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(imagePrompt)}?width=800&height=800&nologo=true&seed=${Math.floor(Math.random() * 999999)}`;
     try {
         const res = await fetch(url);
@@ -46,12 +46,12 @@ async function generateBouquetImage(description: string): Promise<string | null>
 export async function POST(req: NextRequest) {
     const session = req.cookies.get("__session")?.value;
     if (!session) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        return NextResponse.json({ error: "Будь ласка, увійдіть в обліковий запис, щоб скористатися AI-помічником." }, { status: 401 });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-        return NextResponse.json({ error: "GEMINI_API_KEY not configured" }, { status: 503 });
+        return NextResponse.json({ error: "Сервіс тимчасово недоступний. Спробуйте пізніше." }, { status: 503 });
     }
 
     try {
@@ -64,12 +64,12 @@ export async function POST(req: NextRequest) {
             products = await fetchProducts();
         } catch (e) {
             console.error("[ai-chat] fetchProducts failed:", e);
-            return NextResponse.json({ error: `fetchProducts: ${String(e)}` }, { status: 500 });
+            return NextResponse.json({ error: "Не вдалося завантажити каталог квітів. Перевірте з'єднання та спробуйте ще раз." }, { status: 500 });
         }
         console.log("[ai-chat] Step 1 done, products count:", products.length);
 
         if (products.length === 0) {
-            return NextResponse.json({ error: "No products in database" }, { status: 500 });
+            return NextResponse.json({ error: "Каталог квітів порожній. Зверніться до адміністратора магазину." }, { status: 500 });
         }
 
         const flowers = products
@@ -90,7 +90,7 @@ ${JSON.stringify(flowers)}
 ВАЖЛИВО:
 - Кольори "${preferences.colors ?? "будь-які"}" — це СУВОРА вимога. Вибирай ЛИШЕ квіти, які відповідають цьому кольору. НЕ додавай квіти інших кольорів.
 - Точно вказуй кількість кожної квітки у полі quantity (реалістичні числа: 3-15 штук).
-- У полі imagePrompt ТОЧНО описуй: кількість кожної квітки (наприклад "7 red roses, 5 white tulips"), ЛИШЕ колір "${preferences.colors ?? "any"}", стиль аранжування. Пиши ТІЛЬКИ англійською. НЕ додавай квіти або кольори, яких немає у вимогах.
+- У полі imagePrompt ТОЧНО описуй: кількість кожної квітки (наприклад "7 red roses, 5 white tulips"), ЛИШЕ колір "${preferences.colors ?? "any"}", стиль аранжування, та обов'язково вкажи тип упаковки (наприклад "wrapped in kraft paper with a white satin ribbon" або "wrapped in translucent paper with a pink ribbon"). Пиши ТІЛЬКИ англійською. НЕ додавай квіти або кольори, яких немає у вимогах.
 - totalPrice = сума (price × quantity) по всіх квітках, не перевищуй бюджет.
 
 Відповідь надай суворо у форматі JSON-масиву без маркдауну:
@@ -110,14 +110,14 @@ ${JSON.stringify(flowers)}
         const geminiData = await geminiRes.json();
         if (!geminiRes.ok) {
             console.error("[ai-chat] Gemini error:", JSON.stringify(geminiData));
-            return NextResponse.json({ error: `Gemini API error: ${JSON.stringify(geminiData)}` }, { status: 500 });
+            return NextResponse.json({ error: "Сервіс генерації букетів тимчасово не відповідає. Спробуйте ще раз через кілька хвилин." }, { status: 500 });
         }
         console.log("[ai-chat] Step 2 done. Parsing JSON...");
 
         const candidate = geminiData.candidates?.[0];
         if (!candidate?.content?.parts) {
             console.error("[ai-chat] Unexpected Gemini response:", JSON.stringify(geminiData));
-            return NextResponse.json({ error: `Gemini bad response: ${JSON.stringify(geminiData)}` }, { status: 500 });
+            return NextResponse.json({ error: "Отримано некоректну відповідь від сервісу генерації. Спробуйте ще раз." }, { status: 500 });
         }
         const rawText: string = candidate.content.parts
             .map((p: { text?: string }) => p.text ?? "")
@@ -157,6 +157,6 @@ ${JSON.stringify(flowers)}
         return NextResponse.json({ bouquets: results });
     } catch (err) {
         console.error("[ai-chat] Unexpected error:", err);
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+        return NextResponse.json({ error: "Сталася неочікувана помилка. Спробуйте ще раз або зверніться до підтримки." }, { status: 500 });
     }
 }

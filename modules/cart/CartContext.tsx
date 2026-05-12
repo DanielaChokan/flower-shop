@@ -5,6 +5,8 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/modules/auth/AuthContext";
 
+export type CartFlower = { id: string; name: string; quantity: number; price: number };
+
 export type CartItem = {
   id: string;
   name: string;
@@ -13,11 +15,12 @@ export type CartItem = {
   rating: number;
   quantity: number;
   isCustom?: boolean;
+  flowers?: CartFlower[];
 };
 
 type StoredCartItem =
   | { id: string; quantity: number; isCustom?: false }
-  | { id: string; quantity: number; isCustom: true; name: string; price: number; image: string; rating: number };
+  | { id: string; quantity: number; isCustom: true; name: string; price: number; image: string; rating: number; flowers?: CartFlower[] };
 
 type CartContextType = {
   items: CartItem[];
@@ -58,7 +61,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const enriched = await Promise.all(
         stored.map(async (s) => {
           if (s.isCustom) {
-            return { id: s.id, name: s.name, price: s.price, image: s.image, rating: s.rating, quantity: s.quantity, isCustom: true };
+            return { id: s.id, name: s.name, price: s.price, image: s.image, rating: s.rating, quantity: s.quantity, isCustom: true, flowers: s.flowers };
           }
           const productSnap = await getDoc(doc(db, "products", s.id));
           if (!productSnap.exists()) return null;
@@ -74,7 +77,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const saveToFirestore = useCallback((nextItems: CartItem[], uid: string) => {
     const stored: StoredCartItem[] = nextItems.map((item) => {
       if (item.isCustom) {
-        return { id: item.id, quantity: item.quantity, isCustom: true as const, name: item.name, price: item.price, image: item.image, rating: item.rating };
+        return { id: item.id, quantity: item.quantity, isCustom: true as const, name: item.name, price: item.price, image: item.image, rating: item.rating, flowers: item.flowers };
       }
       return { id: item.id, quantity: item.quantity };
     });
@@ -94,7 +97,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           i.id === bouquet.id ? { ...i, quantity: i.quantity + 1 } : i
         );
       } else {
-        next = [...prev, { ...bouquet, quantity: 1, isCustom: true }];
+        next = [...prev, { ...bouquet, quantity: 1, isCustom: true as const }];
       }
       if (user) saveToFirestore(next, user.uid);
       return next;

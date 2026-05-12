@@ -52,7 +52,7 @@
 .bubble {
   max-width: 72%;
   padding: 12px 16px;
-  border-radius: 20px;
+  border-radius: 8px;
   font-size: 15px;
   line-height: 1.5;
 }
@@ -60,14 +60,25 @@
 .bubbleBot {
   background: var(--surface);
   color: var(--foreground);
-  border-bottom-left-radius: 6px;
+  border-bottom-left-radius: 2px;
   border: 1px solid var(--secondary-light);
+}
+
+.bubbleError {
+  background: #fff3f3;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+  border-bottom-left-radius: 2px;
+}
+
+.bubbleErrorIcon {
+  margin-right: 4px;
 }
 
 .bubbleUser {
   background: var(--primary);
   color: #fff;
-  border-bottom-right-radius: 6px;
+  border-bottom-right-radius: 2px;
 }
 
 .chips {
@@ -79,7 +90,7 @@
 
 .chip {
   padding: 6px 14px;
-  border-radius: 20px;
+  border-radius: 6px;
   border: 1.5px solid var(--primary);
   background: transparent;
   color: var(--primary);
@@ -103,8 +114,8 @@
   background: var(--surface);
   border: 1px solid var(--secondary-light);
   padding: 14px 18px;
-  border-radius: 20px;
-  border-bottom-left-radius: 6px;
+  border-radius: 8px;
+  border-bottom-left-radius: 2px;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -126,6 +137,23 @@
   40% { opacity: 1; transform: scale(1); }
 }
 
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--secondary-light);
+}
+
 .results {
   display: flex;
   flex-direction: column;
@@ -136,7 +164,7 @@
 
 .card {
   background: var(--surface);
-  border-radius: 18px;
+  border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--secondary-light);
   box-shadow: 0 2px 10px rgba(108,26,53,0.07);
@@ -162,6 +190,15 @@
   color: var(--muted);
   font-size: 13px;
   text-align: center;
+}
+
+.cardImgDisclaimer {
+  margin: 4px 10px 0;
+  font-size: 11px;
+  color: var(--text-muted, #999);
+  font-style: italic;
+  text-align: center;
+  line-height: 1.4;
 }
 
 .cardBody {
@@ -192,7 +229,7 @@
 .flowerTag {
   font-size: 12px;
   padding: 3px 9px;
-  border-radius: 12px;
+  border-radius: 4px;
   background: var(--secondary-light);
   color: var(--primary);
   border: 1px solid var(--secondary);
@@ -212,7 +249,7 @@
 
 .cardBtn {
   padding: 7px 16px;
-  border-radius: 20px;
+  border-radius: 6px;
   background: var(--primary);
   color: #fff;
   border: none;
@@ -238,7 +275,7 @@
 .input {
   flex: 1;
   padding: 12px 18px;
-  border-radius: 24px;
+  border-radius: 8px;
   border: 1.5px solid var(--input-border);
   background: var(--surface);
   color: var(--foreground);
@@ -258,7 +295,7 @@
 .sendBtn {
   width: 44px;
   height: 44px;
-  border-radius: 50%;
+  border-radius: 8px;
   background: var(--primary);
   color: #fff;
   border: none;
@@ -283,17 +320,17 @@
   align-self: center;
   margin-top: 6px;
   padding: 8px 20px;
-  border-radius: 20px;
-  background: transparent;
-  border: 1.5px solid var(--primary);
-  color: var(--primary);
+  border-radius: 6px;
+  background: var(--primary);
+  color: #fff;
   font-size: 14px;
   cursor: pointer;
   transition: background 0.18s, color 0.18s;
 }
 
 .restartBtn:hover {
-  background: var(--primary);
-  color: #fff;
+  background: transparent;
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
 }
 

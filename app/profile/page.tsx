@@ -158,6 +158,7 @@ export default function ProfilePage() {
   const handleOpenOrderDetails = async (order: Order) => {
     setSelectedOrder(order);
     const missingIds = order.items
+      .filter((it: OrderItem) => !it.customName)
       .map((it: OrderItem) => it.productId)
       .filter((id: string) => !orderProductNames[id]);
     if (missingIds.length === 0) return;
@@ -488,14 +489,32 @@ export default function ProfilePage() {
             <h4 className={styles.modalSectionTitle}>Склад замовлення</h4>
             <ul className={styles.orderItems}>
               {selectedOrder.items.map((item, i) => (
-                <li key={i} className={styles.orderItem}>
-                  <span className={styles.orderItemName}>
-                    {orderNamesLoading && !orderProductNames[item.productId]
-                      ? "..."
-                      : (orderProductNames[item.productId] ?? item.productId)}
-                  </span>
-                  <span className={styles.orderItemQty}>× {item.quantity}</span>
-                  <span className={styles.orderItemPrice}>{item.price * item.quantity} грн</span>
+                <li key={i} className={`${styles.orderItem} ${item.customName ? styles.orderItemCustom : ""}`}>
+                  <div className={styles.orderItemMain}>
+                    <span className={styles.orderItemName}>
+                      {item.customName ? (
+                        <>
+                          <span className={styles.aiBadge}>AI</span>
+                          {item.customName}
+                        </>
+                      ) : (
+                        orderNamesLoading && !orderProductNames[item.productId]
+                          ? "..."
+                          : (orderProductNames[item.productId] ?? item.productId)
+                      )}
+                    </span>
+                    <span className={styles.orderItemQty}>× {item.quantity}</span>
+                    <span className={styles.orderItemPrice}>{item.price * item.quantity} грн</span>
+                  </div>
+                  {item.customName && item.flowers && item.flowers.length > 0 && (
+                    <div className={styles.bouquetFlowers}>
+                      {item.flowers.map((f, fi) => (
+                        <span key={fi} className={styles.bouquetFlowerTag}>
+                          {f.name} × {f.quantity}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

@@ -20,6 +20,8 @@ export type OrderItem = {
   productId: string
   quantity: number
   price: number
+  customName?: string
+  flowers?: { id: string; name: string; quantity: number; price: number }[]
 }
 
 export type OrderStatus = "pending" | "confirmed" | "delivered" | "cancelled"

@@ -82,7 +82,12 @@ export default function CheckoutModal({ onClose }: Props) {
     try {
       const orderRef = await addDoc(collection(db, "orders"), {
         userId: user.uid,
-        items: items.map((i) => ({ productId: i.id, quantity: i.quantity, price: i.price })),
+        items: items.map((i) => ({
+          productId: i.id,
+          quantity: i.quantity,
+          price: i.price,
+          ...(i.isCustom ? { customName: i.name, flowers: i.flowers ?? [] } : {}),
+        })),
         totalPrice: discountedTotal,
         status: "pending",
         recipient: recipient.trim(),
