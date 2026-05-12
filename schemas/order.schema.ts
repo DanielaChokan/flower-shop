@@ -14,6 +14,7 @@ export const orderSchema = z.object({
   totalPrice: z.number().positive(),
   status: orderStatusSchema,
   deliveryAddress: z.string().optional(),
+  deliveryDate: z.string().optional(),
   deliveryTime: z.string().optional(),
   recipient: z.string().optional(),
   phone: z.string().optional(),
@@ -27,6 +28,7 @@ export const checkoutFormSchema = z.object({
     .min(1, "Введіть номер телефону")
     .regex(/^\+?3?8?(0\d{9})$/, "Невірний формат номера (наприклад: +380XXXXXXXXX)"),
   address: z.string().min(5, "Введіть повну адресу доставки (мін. 5 символів)"),
+  deliveryDate: z.string().optional(),
   deliveryTime: z.string().optional(),
   comment: z.string().optional(),
 })

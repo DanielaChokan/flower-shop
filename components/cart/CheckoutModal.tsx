@@ -10,6 +10,36 @@ import { classifyCustomer, buildCustomerFeatures, REGULAR_CUSTOMER_DISCOUNT } fr
 import { CustomerType } from "@/lib/api";
 import styles from "./CheckoutModal.module.css";
 
+const TIME_SLOTS = [
+  "09:00",
+  "10:00",
+  "11:00",
+  "12:00",
+  "13:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+  "18:00",
+  "19:00",
+  "20:00",
+  "21:00",
+  "22:00",
+];
+
+function getAvailableDates(): { value: string; label: string }[] {
+  const dates: { value: string; label: string }[] = [];
+  const now = new Date();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() + i);
+    const value = d.toISOString().slice(0, 10);
+    const label = d.toLocaleDateString("uk-UA", { weekday: "short", day: "numeric", month: "long" });
+    dates.push({ value, label });
+  }
+  return dates;
+}
+
 type Props = {
   onClose: () => void;
 };
@@ -24,6 +54,7 @@ export default function CheckoutModal({ onClose }: Props) {
   const [recipient, setRecipient] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [deliveryDate, setDeliveryDate] = useState(getAvailableDates()[0].value);
   const [deliveryTime, setDeliveryTime] = useState("");
   const [comment, setComment] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<"recipient" | "phone" | "address", string>>>({});
@@ -34,6 +65,11 @@ export default function CheckoutModal({ onClose }: Props) {
   const [selectedSavedAddress, setSelectedSavedAddress] = useState<string | null>(null);
   const [customerType, setCustomerType] = useState<CustomerType | null>(null);
   const [isRegular, setIsRegular] = useState(false);
+
+  const [busySlots, setBusySlots] = useState<string[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
+
+  const availableDates = getAvailableDates();
 
   useEffect(() => {
     if (!user) return;
@@ -55,6 +91,24 @@ export default function CheckoutModal({ onClose }: Props) {
       setIsRegular(result.customerType === "regularCustomer");
     });
   }, [user]);
+
+  useEffect(() => {
+    if (!deliveryDate) return;
+    setSlotsLoading(true);
+    setDeliveryTime("");
+    getDocs(
+      query(
+        collection(db, "orders"),
+        where("deliveryDate", "==", deliveryDate),
+      )
+    ).then((snap) => {
+      const busy = snap.docs
+        .filter((d) => !["cancelled", "delivered"].includes(d.data().status as string))
+        .map((d) => d.data().deliveryTime as string)
+        .filter(Boolean);
+      setBusySlots(busy);
+    }).finally(() => setSlotsLoading(false));
+  }, [deliveryDate]);
 
   const handlePay = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +147,8 @@ export default function CheckoutModal({ onClose }: Props) {
         recipient: recipient.trim(),
         phone: phone.trim(),
         deliveryAddress: address.trim(),
-        deliveryTime: deliveryTime.trim() || null,
+        deliveryDate: deliveryDate || null,
+        deliveryTime: deliveryTime || null,
         comment: comment.trim() || null,
         createdAt: serverTimestamp(),
       });
@@ -119,13 +174,21 @@ export default function CheckoutModal({ onClose }: Props) {
               recipient: recipient.trim(),
               phone: phone.trim(),
               deliveryAddress: address.trim(),
-              deliveryTime: deliveryTime.trim() || null,
+              deliveryDate: deliveryDate || null,
+              deliveryTime: deliveryTime || null,
               comment: comment.trim() || null,
               items: items.map((i) => ({ name: i.name, quantity: i.quantity, price: i.price })),
               totalPrice: total,
             },
           }),
-        }).catch(() => {});
+        }).then(async (res) => {
+          if (!res.ok) {
+            const text = await res.text().catch(() => res.status.toString());
+            console.error("[order-confirmed email] HTTP", res.status, text);
+          }
+        }).catch((err) => {
+          console.error("[order-confirmed email] fetch error:", err);
+        });
       }
 
       clearCart();
@@ -175,6 +238,7 @@ export default function CheckoutModal({ onClose }: Props) {
               <li><span>Отримувач</span><strong>{recipient}</strong></li>
               <li><span>Телефон</span><strong>{phone}</strong></li>
               <li><span>Адреса</span><strong>{address}</strong></li>
+              {deliveryDate && <li><span>Дата доставки</span><strong>{availableDates.find((d) => d.value === deliveryDate)?.label ?? deliveryDate}</strong></li>}
               {deliveryTime && <li><span>Час доставки</span><strong>{deliveryTime}</strong></li>}
               {comment && <li><span>Коментар</span><strong>{comment}</strong></li>}
               {isRegular && (
@@ -263,15 +327,49 @@ export default function CheckoutModal({ onClose }: Props) {
                 {fieldErrors.address && <span className={styles.fieldError}>{fieldErrors.address}</span>}
               </div>
 
+              <div className={styles.fieldRow}>
+                <div className={styles.field}>
+                  <label htmlFor="co-date">День доставки</label>
+                  <select
+                    id="co-date"
+                    value={deliveryDate}
+                    onChange={(e) => setDeliveryDate(e.target.value)}
+                    className={styles.selectField}
+                  >
+                    {availableDates.map((d) => (
+                      <option key={d.value} value={d.value}>{d.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
               <div className={styles.field}>
-                <label htmlFor="co-time">Зручний час доставки</label>
-                <input
-                  id="co-time"
-                  type="text"
-                  placeholder="наприклад: 14:00 – 16:00"
-                  value={deliveryTime}
-                  onChange={(e) => setDeliveryTime(e.target.value)}
-                />
+                <label>Час доставки</label>
+                {slotsLoading ? (
+                  <p className={styles.slotsLoading}>Перевірка доступності...</p>
+                ) : (
+                  <div className={styles.timeSlots}>
+                    {TIME_SLOTS.map((slot) => {
+                      const busy = busySlots.includes(slot);
+                      return (
+                        <button
+                          key={slot}
+                          type="button"
+                          disabled={busy}
+                          onClick={() => setDeliveryTime(busy ? deliveryTime : slot)}
+                          className={[
+                            styles.timeSlot,
+                            deliveryTime === slot ? styles.timeSlotActive : "",
+                            busy ? styles.timeSlotBusy : "",
+                          ].join(" ").trim()}
+                        >
+                          {slot}
+                          {busy && <span className={styles.busyLabel}>Зайнято</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               <div className={styles.field}>

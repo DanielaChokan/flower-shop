@@ -3,6 +3,7 @@ export type OrderEmailData = {
   recipient: string
   phone: string
   deliveryAddress: string
+  deliveryDate?: string | null
   deliveryTime?: string | null
   comment?: string | null
   items: { name: string; quantity: number; price: number }[]
@@ -135,6 +136,11 @@ export function orderConfirmedTemplate(data: OrderEmailData): string {
         <td style="padding:6px 0; color:#888; font-size:13px;">${SVG.phone} Телефон</td>
         <td style="padding:6px 0; color:#3d2c1e; font-size:13px; font-weight:500;">${data.phone}</td>
       </tr>
+      ${data.deliveryDate ? `
+      <tr>
+        <td style="padding:6px 0; color:#888; font-size:13px;">${SVG.clock} Дата доставки</td>
+        <td style="padding:6px 0; color:#3d2c1e; font-size:13px; font-weight:500;">${data.deliveryDate}</td>
+      </tr>` : ""}
       ${data.deliveryTime ? `
       <tr>
         <td style="padding:6px 0; color:#888; font-size:13px;">${SVG.clock} Час доставки</td>
