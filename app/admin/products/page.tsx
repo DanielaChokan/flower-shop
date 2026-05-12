@@ -23,7 +23,6 @@ type ProductForm = {
   stock: string;
   categoryId: string;
   color: string;
-  type: string;
   description: string;
 };
 
@@ -35,22 +34,21 @@ const EMPTY_FORM: ProductForm = {
   stock: "",
   categoryId: "",
   color: "",
-  type: "",
   description: "",
 };
 
 function formToProduct(f: ProductForm): Omit<Product, "id"> {
-  return {
+  const data: Omit<Product, "id"> = {
     name: f.name.trim(),
     price: parseFloat(f.price) || 0,
     image: f.image.trim(),
-    rating: parseFloat(f.rating) || 0,
-    stock: f.stock !== "" ? parseInt(f.stock) : undefined,
-    categoryId: f.categoryId || undefined,
-    color: f.color.trim() || undefined,
-    type: f.type.trim() || undefined,
-    description: f.description.trim() || undefined,
+    stock: parseInt(f.stock),
+    categoryId: f.categoryId,
+    color: f.color.trim(),
   };
+  if (f.rating !== "" && !isNaN(parseFloat(f.rating))) data.rating = parseFloat(f.rating);
+  if (f.description.trim()) data.description = f.description.trim();
+  return data;
 }
 
 function productToForm(p: Product): ProductForm {
@@ -62,23 +60,36 @@ function productToForm(p: Product): ProductForm {
     stock: p.stock !== undefined ? String(p.stock) : "",
     categoryId: p.categoryId ?? "",
     color: p.color ?? "",
-    type: p.type ?? "",
     description: p.description ?? "",
   };
 }
 
-function validate(f: ProductForm): Partial<Record<keyof ProductForm, string>> {
+function validate(
+  f: ProductForm,
+  extra?: { newCategoryName?: string; newColorName?: string }
+): Partial<Record<keyof ProductForm, string>> {
   const errors: Partial<Record<keyof ProductForm, string>> = {};
   if (!f.name.trim()) errors.name = "Назва обов'язкова";
   if (!f.price || isNaN(parseFloat(f.price)) || parseFloat(f.price) <= 0)
     errors.price = "Введіть коректну ціну";
   if (!f.image.trim()) errors.image = "URL зображення обов'язковий";
+  if (f.stock === "" || isNaN(parseInt(f.stock))) errors.stock = "Залишок обов'язковий";
+  if (f.categoryId === "__new__" || !f.categoryId) {
+    if (!extra?.newCategoryName?.trim()) errors.categoryId = "Введіть назву нової категорії";
+  }
+  if (!f.color.trim() || f.color === "__new__") {
+    if (!extra?.newColorName?.trim()) errors.color = "Колір обов'язковий";
+  }
   return errors;
 }
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [newColorInput, setNewColorInput] = useState("");
+  const [showNewColorInput, setShowNewColorInput] = useState(false);
+  const [newCategoryInput, setNewCategoryInput] = useState("");
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -107,10 +118,16 @@ export default function AdminProductsPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  const colorOptions = [...new Set(products.map((p) => p.color).filter(Boolean))].sort();
+
   const openCreate = () => {
     setEditTarget(null);
     setForm(EMPTY_FORM);
     setErrors({});
+    setNewColorInput("");
+    setShowNewColorInput(false);
+    setNewCategoryInput("");
+    setShowNewCategoryInput(false);
     setModalOpen(true);
   };
 
@@ -118,15 +135,34 @@ export default function AdminProductsPage() {
     setEditTarget(p);
     setForm(productToForm(p));
     setErrors({});
+    setNewColorInput("");
+    setShowNewColorInput(false);
+    setNewCategoryInput("");
+    setShowNewCategoryInput(false);
     setModalOpen(true);
   };
 
   const handleSave = async () => {
-    const errs = validate(form);
+    const errs = validate(form, {
+      newCategoryName: showNewCategoryInput ? newCategoryInput : undefined,
+      newColorName: showNewColorInput ? newColorInput : undefined,
+    });
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setSaving(true);
     try {
-      const data = formToProduct(form);
+      let resolvedCategoryId = form.categoryId;
+      if (showNewCategoryInput && newCategoryInput.trim()) {
+        const existing = categories.find(
+          (c) => c.name.toLowerCase() === newCategoryInput.trim().toLowerCase()
+        );
+        if (existing) {
+          resolvedCategoryId = existing.id;
+        } else {
+          const newCatRef = await addDoc(collection(db, "categories"), { name: newCategoryInput.trim() });
+          resolvedCategoryId = newCatRef.id;
+        }
+      }
+      const data = formToProduct({ ...form, categoryId: resolvedCategoryId });
       if (editTarget) {
         await updateDoc(doc(db, "products", editTarget.id), data as Record<string, unknown>);
         showToast("Товар оновлено");
@@ -224,7 +260,7 @@ export default function AdminProductsPage() {
                   <td style={{ fontWeight: 600, color: "var(--primary, #6C1A35)" }}>{p.price} грн</td>
                   <td style={{ color: "var(--muted, #7A6B6F)", fontSize: 13 }}>{getCategoryName(p.categoryId)}</td>
                   <td style={{ fontSize: 13 }}>{p.stock ?? "—"}</td>
-                  <td style={{ fontSize: 13 }}>{"★".repeat(Math.round(p.rating))} {p.rating}</td>
+                  <td style={{ fontSize: 13 }}>{p.rating !== undefined ? `${"★".repeat(Math.round(p.rating))} ${p.rating}` : "—"}</td>
                   <td>
                     <div className={styles.actions}>
                       <button className={styles.iconBtn} title="Редагувати" onClick={() => openEdit(p)}>
@@ -266,8 +302,9 @@ export default function AdminProductsPage() {
                 {errors.price && <span className={styles.fieldError}>{errors.price}</span>}
               </div>
               <div className={styles.formGroup}>
-                <label>Залишок</label>
+                <label>Залишок *</label>
                 <input className={styles.formInput} type="number" min="0" value={form.stock} onChange={(e) => set("stock", e.target.value)} placeholder="0" />
+                {errors.stock && <span className={styles.fieldError}>{errors.stock}</span>}
               </div>
             </div>
 
@@ -277,31 +314,83 @@ export default function AdminProductsPage() {
               {errors.image && <span className={styles.fieldError}>{errors.image}</span>}
             </div>
 
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label>Категорія</label>
-                <select className={styles.formSelect} value={form.categoryId} onChange={(e) => set("categoryId", e.target.value)}>
-                  <option value="">— без категорії —</option>
-                  {categories.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div className={styles.formGroup}>
-                <label>Рейтинг (0–5)</label>
-                <input className={styles.formInput} type="number" min="0" max="5" step="0.1" value={form.rating} onChange={(e) => set("rating", e.target.value)} />
-              </div>
+            <div className={styles.formGroup}>
+              <label>Категорія *</label>
+              <select
+                className={styles.formSelect}
+                value={showNewCategoryInput ? "__new__" : form.categoryId}
+                onChange={(e) => {
+                  if (e.target.value === "__new__") {
+                    setShowNewCategoryInput(true);
+                    set("categoryId", "");
+                  } else {
+                    setShowNewCategoryInput(false);
+                    set("categoryId", e.target.value);
+                  }
+                }}
+              >
+                <option value="">— оберіть категорію —</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+                <option value="__new__">+ Додати нову категорію</option>
+              </select>
+              {showNewCategoryInput && (
+                <input
+                  className={styles.formInput}
+                  style={{ marginTop: 6 }}
+                  placeholder="Назва категорії"
+                  value={newCategoryInput}
+                  onChange={(e) => {
+                    setNewCategoryInput(e.target.value);
+                    set("categoryId", "__new__");
+                  }}
+                  autoFocus
+                />
+              )}
+              {errors.categoryId && <span className={styles.fieldError}>{errors.categoryId}</span>}
             </div>
 
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label>Колір</label>
-                <input className={styles.formInput} value={form.color} onChange={(e) => set("color", e.target.value)} placeholder="Червоний" />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Тип</label>
-                <input className={styles.formInput} value={form.type} onChange={(e) => set("type", e.target.value)} placeholder="Троянди" />
-              </div>
+            <div className={styles.formGroup}>
+              <label>Колір *</label>
+              <select
+                className={styles.formSelect}
+                value={showNewColorInput ? "__new__" : form.color}
+                onChange={(e) => {
+                  if (e.target.value === "__new__") {
+                    setShowNewColorInput(true);
+                    set("color", "");
+                  } else {
+                    setShowNewColorInput(false);
+                    set("color", e.target.value);
+                  }
+                }}
+              >
+                <option value="">— оберіть колір —</option>
+                {colorOptions.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+                <option value="__new__">+ Додати новий колір</option>
+              </select>
+              {showNewColorInput && (
+                <input
+                  className={styles.formInput}
+                  style={{ marginTop: 6 }}
+                  placeholder="Назва кольору"
+                  value={newColorInput}
+                  onChange={(e) => {
+                    setNewColorInput(e.target.value);
+                    set("color", e.target.value);
+                  }}
+                  autoFocus
+                />
+              )}
+              {errors.color && <span className={styles.fieldError}>{errors.color}</span>}
+            </div>
+
+            <div className={styles.formGroup}>
+              <label>Рейтинг (0–5)</label>
+              <input className={styles.formInput} type="number" min="0" max="5" step="0.1" value={form.rating} onChange={(e) => set("rating", e.target.value)} />
             </div>
 
             <div className={styles.formGroup}>

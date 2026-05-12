@@ -3,10 +3,10 @@ export type Product = {
   name: string
   price: number
   image: string
-  rating: number
-  stock?: number
-  categoryId?: string
-  color?: string
+  rating?: number
+  stock: number
+  categoryId: string
+  color: string
   type?: string
   description?: string
 }

@@ -43,7 +43,7 @@ export default function Home() {
               priority
             />
             <div className={styles.heroText}>
-              <h1>Квіти з доставкою подаруйте щастя близьким</h1>
+              <h1>Квіти з доставкою — подаруйте щастя близьким</h1>
             </div>
           </div>
           <div className={styles.heroSide}>

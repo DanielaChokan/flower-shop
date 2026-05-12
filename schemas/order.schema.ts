@@ -28,8 +28,8 @@ export const checkoutFormSchema = z.object({
     .min(1, "Введіть номер телефону")
     .regex(/^\+?3?8?(0\d{9})$/, "Невірний формат номера (наприклад: +380XXXXXXXXX)"),
   address: z.string().min(5, "Введіть повну адресу доставки (мін. 5 символів)"),
-  deliveryDate: z.string().optional(),
-  deliveryTime: z.string().optional(),
+  deliveryDate: z.string().min(1, "Оберіть дату доставки"),
+  deliveryTime: z.string().min(1, "Оберіть час доставки"),
   comment: z.string().optional(),
 })
 

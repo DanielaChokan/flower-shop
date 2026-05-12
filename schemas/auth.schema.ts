@@ -24,15 +24,5 @@ export const registerSchema = z.object({
     .min(6, "Пароль має містити щонайменше 6 символів"),
 })
 
-export const userProfileSchema = z.object({
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  photoURL: z.string().url().nullable().optional(),
-  customerType: z.string().optional(),
-})
-
 export type LoginFormData = z.infer<typeof loginSchema>
 export type RegisterFormData = z.infer<typeof registerSchema>
-export type UserProfileFormData = z.infer<typeof userProfileSchema>
