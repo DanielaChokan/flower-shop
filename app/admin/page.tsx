@@ -407,6 +407,100 @@ export default function AdminOrdersPage() {
         </div>
       )}
 
+      <div className={styles.orderCards}>
+        {filtered.map((order) => (
+          <div key={order.id} className={styles.orderCard}>
+            <div className={styles.orderCardTop}>
+              <div className={styles.orderCardInfo}>
+                <span className={styles.orderId}>#{order.id.slice(-6).toUpperCase()}</span>
+                <div className={styles.clientName}>{order.recipient ?? "—"}</div>
+                <div className={styles.clientSub}>{order.userEmail ?? order.phone ?? "—"}</div>
+              </div>
+              <span className={`${styles.badge} ${STATUS_BADGE[order.status]}`}>
+                {STATUS_LABELS[order.status]}
+              </span>
+            </div>
+            <div className={styles.orderCardMeta}>
+              <span>{formatDate(order.createdAt)}</span>
+              <span className={styles.priceCell}>{order.totalPrice} грн</span>
+            </div>
+            <div className={styles.orderCardActions}>
+              <div className={styles.orderCardStatusRow}>
+                <select
+                  className={styles.statusSelect}
+                  value={selectedStatus[order.id] ?? order.status}
+                  onChange={(e) =>
+                    setSelectedStatus((p) => ({ ...p, [order.id]: e.target.value as OrderStatus }))
+                  }
+                >
+                  {(Object.keys(STATUS_LABELS) as OrderStatus[]).map((s) => (
+                    <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                  ))}
+                </select>
+                <button
+                  className={styles.iconBtn}
+                  title="Зберегти статус"
+                  disabled={updating[order.id] || selectedStatus[order.id] === order.status}
+                  onClick={() => handleUpdate(order)}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+              </div>
+              <div className={styles.orderCardBtns}>
+                <button
+                  className={`${styles.iconBtn} ${styles.iconBtnView}`}
+                  title={expanded[order.id] ? "Приховати" : "Деталі"}
+                  onClick={() => setExpanded((p) => ({ ...p, [order.id]: !p[order.id] }))}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                <button
+                  className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+                  title="Видалити"
+                  onClick={() => setConfirmDelete(order.id)}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            {expanded[order.id] && (
+              <div className={styles.orderCardDetail}>
+                <div className={styles.detailGrid}>
+                  <div><strong>Адреса:</strong> {order.deliveryAddress ?? "—"}</div>
+                  <div><strong>Час доставки:</strong> {order.deliveryTime ?? "—"}</div>
+                  <div><strong>Телефон:</strong> {order.phone ?? "—"}</div>
+                  {order.comment && <div><strong>Коментар:</strong> {order.comment}</div>}
+                </div>
+                <table className={styles.itemsTable}>
+                  <thead>
+                    <tr>
+                      <th>Товар</th>
+                      <th>Ціна</th>
+                      <th>К-сть</th>
+                      <th>Сума</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {order.items.map((item, i) => (
+                      <tr key={i}>
+                        <td>{item.customName ? `🤖 ${item.customName}` : (productNames[item.productId] ?? item.productId)}</td>
+                        <td>{item.price} грн</td>
+                        <td>{item.quantity}</td>
+                        <td>{item.price * item.quantity} грн</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
       {confirmDelete && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>

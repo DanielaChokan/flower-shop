@@ -334,3 +334,40 @@
   color: var(--primary);
 }
 
+@media (max-width: 640px) {
+  .messages {
+    padding: 16px 12px 10px;
+    gap: 14px;
+  }
+
+  .bubble {
+    max-width: 88%;
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+
+  .inputArea {
+    padding: 10px 12px 14px;
+    gap: 8px;
+  }
+
+  .input {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+
+  .sendBtn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .results {
+    max-width: 100%;
+  }
+
+  .cardImg,
+  .cardImgPlaceholder {
+    height: 160px;
+  }
+}
+

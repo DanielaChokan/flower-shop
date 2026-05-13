@@ -524,3 +524,129 @@
   to { transform: translateY(0); opacity: 1; }
 }
 
+.orderCards {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.orderCard {
+  background: var(--surface);
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 14px 16px;
+  display: grid;
+  gap: 10px;
+}
+
+.orderCardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.orderCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.orderCardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.orderCardActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.orderCardStatusRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.orderCardStatusRow .statusSelect {
+  flex: 1;
+  min-width: 0;
+}
+
+.orderCardBtns {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.orderCardDetail {
+  background: var(--row-hover);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+@media (max-width: 640px) {
+  .heading {
+    font-size: 20px;
+  }
+
+  .tableWrap {
+    display: none;
+  }
+
+  .orderCards {
+    display: flex;
+  }
+
+  .modal {
+    width: 94vw;
+    min-width: 0;
+    padding: 18px 16px;
+    border-radius: 12px;
+  }
+
+  .modalOverlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modal {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .modalActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modalActions button {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .toast {
+    left: 12px;
+    right: 12px;
+    bottom: 76px;
+    text-align: center;
+  }
+
+  .detailGrid {
+    grid-template-columns: 1fr;
+  }
+}
+

@@ -97,6 +97,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         <main className={styles.content}>{children}</main>
       </div>
+
+      <nav className={styles.mobileNav}>
+        {NAV_ITEMS.map((item) => {
+          const isActive =
+            item.href === "/admin"
+              ? pathname === "/admin"
+              : pathname.startsWith(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`${styles.mobileNavLink} ${isActive ? styles.mobileNavLinkActive : ""}`}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 }

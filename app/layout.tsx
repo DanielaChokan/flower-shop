@@ -23,6 +23,11 @@ export const metadata: Metadata = {
     description: "Квіти з доставкою 24/7",
 };
 
+export const viewport = {
+    width: "device-width",
+    initialScale: 1,
+};
+
 export default function RootLayout({
     children,
 }: Readonly<{

@@ -86,6 +86,20 @@ export default function Home() {
           ))}
         </section>
 
+        <div className={styles.featuresSlider}>
+          {featureItems.map((item) => (
+            <article key={item.title} className={styles.featureCard}>
+              <div className={styles.featureImage}>
+                <Image src={item.image} alt={item.title} fill sizes="64px" />
+              </div>
+              <div>
+                <h4>{item.title}</h4>
+                <p>{item.subtitle}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+
         <section className={styles.products}>
           <div className={styles.productsHeader}>
             <h2>Найбажаніші</h2>

@@ -240,6 +240,7 @@ export default function AdminProductsPage() {
       {filtered.length === 0 ? (
         <div className={styles.emptyState}>Товари не знайдено</div>
       ) : (
+        <>
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
@@ -296,6 +297,42 @@ export default function AdminProductsPage() {
             </tbody>
           </table>
         </div>
+
+        <div className={styles.productCards}>
+          {filtered.map((p) => (
+            <div key={p.id} className={styles.productCard}>
+              <img
+                src={p.image}
+                alt={p.name}
+                className={styles.productCardImg}
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+              <div className={styles.productCardBody}>
+                <span className={styles.productCardName}>{p.name}</span>
+                <span className={styles.productCardPrice}>{p.price} грн</span>
+                <div className={styles.productCardMeta}>
+                  <span>{getCategoryName(p.categoryId)}</span>
+                  <span>Залишок: {(p.stock ?? 0) === 0 ? "Немає" : p.stock}</span>
+                </div>
+              </div>
+              <div className={styles.productCardActions}>
+                <button className={styles.iconBtn} title="Редагувати" onClick={() => openEdit(p)}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button className={`${styles.iconBtn} ${styles.iconBtnDanger}`} title="Видалити" onClick={() => setConfirmDelete(p.id)}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+        </>
       )}
 
       {modalOpen && (

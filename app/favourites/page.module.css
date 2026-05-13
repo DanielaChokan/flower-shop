@@ -81,3 +81,24 @@
         gap: 16px;
     }
 }
+
+@media (max-width: 640px) {
+    .main {
+        padding: 14px 14px 48px;
+        gap: 16px;
+    }
+
+    .heading {
+        font-size: 20px;
+    }
+
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .pagination {
+        gap: 10px;
+        margin-top: 20px;
+    }
+}

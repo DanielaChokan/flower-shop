@@ -106,3 +106,30 @@
   flex-direction: column;
   overflow: hidden;
 }
+
+@media (max-width: 640px) {
+  .drawer {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    transform: translate(-50%, -50%);
+    width: calc(100% - 40px);
+    max-width: 420px;
+    height: auto;
+    max-height: 90dvh;
+    border-radius: 20px;
+    box-shadow: 0 8px 40px rgba(44, 10, 23, 0.22);
+    animation: scaleInChat 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes scaleInChat {
+    from { opacity: 0; transform: translate(-50%, -50%) scale(0.95); }
+    to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  }
+
+  .header {
+    padding: 16px 16px 14px;
+  }
+}

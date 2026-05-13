@@ -11,7 +11,10 @@ import CategorySlider from "@/components/product/CategorySlider";
 import type { Product } from "@/lib/api";
 import styles from "./page.module.css";
 
-const ITEMS_PER_PAGE = 15;
+function getItemsPerPage() {
+    if (typeof window !== "undefined" && window.innerWidth <= 640) return 12;
+    return 15;
+}
 
 const defaultFilters = (): FilterState => ({
     priceMin: 0,
@@ -29,6 +32,13 @@ export default function CatalogPage() {
     const [filters, setFilters] = useState<FilterState>(defaultFilters());
     const [activeTabIndex, setActiveTabIndex] = useState(0);
     const [page, setPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(getItemsPerPage);
+
+    useEffect(() => {
+        const update = () => setItemsPerPage(getItemsPerPage());
+        window.addEventListener("resize", update);
+        return () => window.removeEventListener("resize", update);
+    }, []);
     const [filterOpen, setFilterOpen] = useState(false);
 
     useEffect(() => {
@@ -79,8 +89,8 @@ export default function CatalogPage() {
         });
     }, [products, search, filters]);
 
-    const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-    const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+    const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
+    const paginated = filtered.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
     const handleTabSelect = (index: number) => {
         setActiveTabIndex(index);

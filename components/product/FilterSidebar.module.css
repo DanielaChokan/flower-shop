@@ -149,3 +149,15 @@
     flex-shrink: 0;
     margin-bottom: 3px;
 }
+
+@media (max-width: 640px) {
+    .sidebar {
+        padding: 14px 16px 18px;
+    }
+
+    .details ul {
+        grid-template-columns: repeat(2, 1fr);
+        grid-auto-flow: dense;
+        grid-template-rows: none;
+    }
+}

@@ -171,3 +171,52 @@
     align-items: center;
   }
 }
+
+@media (max-width: 640px) {
+  .footer {
+    padding: 28px 16px 20px;
+  }
+
+  .top {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .brand {
+    grid-column: auto;
+    align-items: center;
+    text-align: center;
+  }
+
+  .logo {
+    justify-content: center;
+  }
+
+  .contacts {
+    align-items: center;
+  }
+
+  .contactRow {
+    justify-content: center;
+  }
+
+  .centerCol,
+  .rightCol {
+    align-items: center;
+    text-align: center;
+  }
+
+  .social {
+    align-items: center;
+  }
+
+  .catalogButton {
+    width: 100%;
+    padding: 10px 24px;
+  }
+
+  .bottom {
+    text-align: center;
+    margin-top: 20px;
+  }
+}

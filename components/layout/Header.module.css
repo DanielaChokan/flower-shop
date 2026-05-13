@@ -135,3 +135,131 @@
     font-size: 12px;
   }
 }
+
+.menuToggle {
+  display: none;
+}
+
+.adminLogoutMobile {
+  display: none;
+}
+
+.dropdown {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .header {
+    padding: 10px 16px;
+    gap: 8px;
+    grid-template-columns: auto 1fr auto;
+    position: relative;
+  }
+
+  .logo {
+    font-size: 16px;
+    gap: 8px;
+  }
+
+  .logo span {
+    display: none;
+  }
+
+  .centerText {
+    font-size: 11px;
+    text-align: center;
+  }
+
+  .actions {
+    display: none;
+  }
+
+  .adminLogoutMobile {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--neutral-dark);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    flex-shrink: 0;
+  }
+
+  .adminLogoutMobile:hover {
+    color: var(--primary-light);
+  }
+
+  .menuToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--neutral-dark);
+    padding: 4px;
+    border-radius: 8px;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+
+  .menuToggle:hover {
+    background: var(--secondary-light);
+  }
+
+  .dropdown {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: calc(100% + 2px);
+    right: 10px;
+    background: var(--neutral-light);
+    border: 1px solid var(--secondary);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(108,26,53,0.13);
+    z-index: 200;
+    padding: 8px;
+    gap: 2px;
+    min-width: 180px;
+    animation: dropIn 0.18s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  @keyframes dropIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .dropdownItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--neutral-dark);
+    text-align: left;
+    width: 100%;
+    transition: background 0.15s;
+  }
+
+  .dropdownItem:hover {
+    background: var(--secondary-light);
+    color: var(--primary);
+  }
+
+  .dropdownItem svg {
+    flex-shrink: 0;
+  }
+
+  .dropdownDivider {
+    height: 1px;
+    background: var(--secondary);
+    margin: 4px 8px;
+  }
+}

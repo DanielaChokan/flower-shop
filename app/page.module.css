@@ -98,6 +98,31 @@
   gap: 35px;
 }
 
+.featuresSlider {
+  display: none;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 2px 0 8px;
+}
+
+.featuresSlider::-webkit-scrollbar {
+  display: none;
+}
+
+.featuresSlider .featureCard {
+  flex: 0 0 calc(50vw - 20px);
+  max-width: 200px;
+  min-width: 150px;
+  scroll-snap-align: start;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
 .featureCard {
   display: flex;
   align-items: center;
@@ -159,6 +184,7 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 32px;
+  align-items: stretch;
 }
 
 .loyalty {
@@ -257,6 +283,7 @@
   .productGrid4 {
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
+    align-items: stretch;
   }
 
   .loyalty {
@@ -283,6 +310,115 @@
   .loyaltyBenefits {
     grid-column: 2 / 3;
     justify-self: center;
+  }
+
+  .loyaltyRight {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .main {
+    padding: 16px 14px 48px;
+    gap: 32px;
+  }
+
+  .heroMain {
+    min-height: 220px;
+  }
+
+  .heroText {
+    padding: 20px 20px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .heroText h1 {
+    font-size: 18px;
+    max-width: 100%;
+  }
+
+  .heroSide {
+    display: none;
+  }
+
+  .features {
+    display: none;
+  }
+
+  .featuresSlider {
+    display: flex;
+  }
+
+  .featuresSlider .featureCard {
+    flex: 0 0 calc(50vw - 20px);
+    max-width: 200px;
+    min-width: 150px;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .featuresSlider .featureImage {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+
+  .featuresSlider .featureCard h4 {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .featuresSlider .featureCard p {
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  .productGrid4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .productsHeader h2,
+  .reviews h2 {
+    font-size: 20px;
+  }
+
+  .catalogLink {
+    font-size: 14px;
+  }
+
+  .loyalty {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    padding: 18px 16px;
+    gap: 14px;
+  }
+
+  .loyaltyInfo {
+    grid-column: auto;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .loyaltyInfo h3 {
+    font-size: 18px;
+  }
+
+  .loyaltyBenefits {
+    grid-column: auto;
+    justify-self: center;
+    justify-items: center;
+  }
+
+  .loyaltyBenefits div {
+    justify-content: center;
   }
 
   .loyaltyRight {

@@ -218,6 +218,40 @@
     overflow-x: auto;
 }
 
+.mobileOrderList {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mobileOrderCard {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--secondary-light);
+    border: 1px solid var(--secondary-dark);
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.mobileOrderRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.mobileOrderMeta {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.mobileOrderPrice {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--neutral-dark);
+}
+
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -567,5 +601,79 @@
 
     .grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .main {
+        padding: 16px 14px 48px;
+        gap: 20px;
+    }
+
+    .heading {
+        font-size: 22px;
+    }
+
+    .headingRow {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .logoutBtn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .card {
+        padding: 16px 18px 20px;
+    }
+
+    .editActions {
+        flex-direction: column;
+    }
+
+    .saveBtn,
+    .cancelBtn {
+        width: 100%;
+    }
+
+    .addressActions {
+        flex-direction: column;
+    }
+
+    .outlineBtn {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .tableWrapper {
+        overflow-x: hidden;
+    }
+
+    .table {
+        display: none;
+    }
+
+    .mobileOrderList {
+        display: flex;
+    }
+
+    .modal {
+        padding: 20px 16px 24px;
+        border-radius: 20px;
+        max-width: 100%;
+    }
+
+    .modalBackdrop {
+        padding: 20px;
+        align-items: center;
+    }
+
+    .modalMetaRow {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
     }
 }

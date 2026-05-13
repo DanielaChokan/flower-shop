@@ -17,6 +17,8 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
+    height: 100%;
+    box-sizing: border-box;
 }
 
 .card:hover {
@@ -41,6 +43,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    flex: 1;
 }
 
 .content h3 {
@@ -59,7 +62,7 @@
 }
 
 .content button {
-    margin-top: 4px;
+    margin-top: auto;
     padding: 8px 14px;
     border-radius: 8px;
     border: none;
@@ -168,4 +171,38 @@
     padding: 2px 8px;
     display: inline-block;
     width: fit-content;
+}
+
+@media (max-width: 640px) {
+    .card {
+        padding: 14px 10px;
+        gap: 10px;
+    }
+
+    .content h3 {
+        font-size: 13px;
+    }
+
+    .price {
+        font-size: 14px;
+    }
+
+    .rating {
+        font-size: 12px;
+    }
+
+    .content button {
+        font-size: 12px;
+        padding: 7px 10px;
+    }
+
+    .qtyBtn {
+        width: 34px;
+        height: 32px;
+        font-size: 17px;
+    }
+
+    .quantityRow {
+        height: 32px;
+    }
 }

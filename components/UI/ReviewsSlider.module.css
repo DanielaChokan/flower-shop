@@ -111,3 +111,18 @@
     flex: 0 0 calc(33.333% - 11px);
   }
 }
+
+@media (max-width: 640px) {
+  .wrapper {
+    padding: 0 14px;
+  }
+
+  .navArrow {
+    display: none;
+  }
+
+  .card {
+    flex: 0 0 calc(80% - 8px);
+    min-width: 240px;
+  }
+}

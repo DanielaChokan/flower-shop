@@ -423,6 +423,37 @@ export default function ProfilePage() {
                       })}
                     </tbody>
                   </table>
+
+                  <div className={styles.mobileOrderList}>
+                    {orders.map((order) => {
+                      const status = STATUS_LABEL[order.status] ?? { label: order.status, color: "#888" };
+                      return (
+                        <div key={order.id} className={styles.mobileOrderCard}>
+                          <div className={styles.mobileOrderRow}>
+                            <span className={styles.orderId}>#{order.id.slice(0, 8).toUpperCase()}</span>
+                            <span
+                              className={styles.statusBadge}
+                              style={{ color: status.color }}
+                            >
+                              <span className={styles.statusDot} style={{ background: status.color }} />
+                              {status.label}
+                            </span>
+                          </div>
+                          <div className={styles.mobileOrderRow}>
+                            <span className={styles.mobileOrderMeta}>{formatDate(order.createdAt)}</span>
+                            <span className={styles.mobileOrderPrice}>{order.totalPrice} грн</span>
+                          </div>
+                          <button
+                            type="button"
+                            className={styles.detailsBtn}
+                            onClick={() => handleOpenOrderDetails(order)}
+                          >
+                            Деталі
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
             </section>

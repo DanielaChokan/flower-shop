@@ -370,6 +370,91 @@
   }
 }
 
+.productCards {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.productCard {
+  background: var(--surface);
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 12px 14px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.productCardImg {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background: var(--secondary-light);
+}
+
+.productCardBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.productCardName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--neutral-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.productCardMeta {
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.productCardPrice {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.productCardActions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .tableWrap {
+    display: none;
+  }
+
+  .productCards {
+    display: flex;
+  }
+
+  .modal {
+    width: calc(100% - 32px);
+    max-width: 100%;
+    border-radius: 20px;
+  }
+
+  .modalOverlay {
+    padding: 16px;
+    align-items: center;
+  }
+}
+
 .badge {
   display: inline-block;
   padding: 3px 10px;
@@ -712,5 +797,76 @@
   .userHeader {
     flex-direction: column;
     align-items: stretch;
+  }
+}
+
+@media (max-width: 640px) {
+  .heading {
+    font-size: 20px;
+  }
+
+  .pageHeader {
+    margin-bottom: 16px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .filterBtn,
+  .btnPrimary,
+  .btnSecondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .searchWrap {
+    min-width: 0;
+  }
+
+  .modal {
+    width: calc(100% - 40px);
+    max-width: 480px;
+    min-width: 0;
+    padding: 20px 18px;
+    border-radius: 20px;
+  }
+
+  .modalOverlay {
+    padding: 20px;
+    align-items: center;
+  }
+
+  .modalActions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modalActions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .toast {
+    left: 12px;
+    right: 12px;
+    bottom: 76px;
+    text-align: center;
+  }
+
+  .userCard {
+    padding: 12px 14px;
+  }
+
+  .reviewCard {
+    padding: 12px 14px;
+  }
+
+  .emptyState {
+    padding: 40px 16px;
+    font-size: 14px;
   }
 }

@@ -10,13 +10,23 @@ import { useFavourites } from "@/modules/favourites/FavouritesContext";
 import type { Product } from "@/lib/api";
 import styles from "./page.module.css";
 
-const ITEMS_PER_PAGE = 15;
+function getItemsPerPage() {
+    if (typeof window !== "undefined" && window.innerWidth <= 640) return 12;
+    return 15;
+}
 
 export default function FavouritesPage() {
     const { favouriteIds } = useFavourites();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(getItemsPerPage);
+
+    useEffect(() => {
+        const update = () => setItemsPerPage(getItemsPerPage());
+        window.addEventListener("resize", update);
+        return () => window.removeEventListener("resize", update);
+    }, []);
 
     useEffect(() => {
         if (favouriteIds.length === 0) {
@@ -37,10 +47,10 @@ export default function FavouritesPage() {
         });
     }, [favouriteIds]);
 
-    const totalPages = Math.max(1, Math.ceil(products.length / ITEMS_PER_PAGE));
+    const totalPages = Math.max(1, Math.ceil(products.length / itemsPerPage));
     const paginated = useMemo(
-        () => products.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE),
-        [products, page]
+        () => products.slice((page - 1) * itemsPerPage, page * itemsPerPage),
+        [products, page, itemsPerPage]
     );
 
     return (

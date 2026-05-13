@@ -91,3 +91,59 @@
     padding: 24px 20px;
   }
 }
+
+.mobileNav {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .sidebar {
+    display: none;
+  }
+
+  .content {
+    padding: 16px 14px 80px;
+  }
+
+  .mobileNav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--primary-dark, #3B0A15);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 0 env(safe-area-inset-bottom, 6px);
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  .mobileNavLink {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 500;
+    transition: color 0.15s;
+    min-width: 56px;
+  }
+
+  .mobileNavLink:hover,
+  .mobileNavLinkActive {
+    color: #fff;
+  }
+
+  .mobileNavLinkActive {
+    color: #fff;
+  }
+
+  .mobileNavLinkActive .navIcon {
+    opacity: 1;
+  }
+}

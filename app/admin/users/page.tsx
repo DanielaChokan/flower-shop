@@ -168,9 +168,6 @@ export default function AdminUsersPage() {
                         <div style={{ fontWeight: 500, fontSize: 14 }}>
                           {u.displayName ?? (`${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || "—")}
                         </div>
-                        <div style={{ fontSize: 11, color: "var(--muted)", fontFamily: "monospace" }}>
-                          {u.uid.slice(0, 12)}...
-                        </div>
                       </div>
                     </div>
                   </td>
@@ -249,7 +246,6 @@ export default function AdminUsersPage() {
                         {u.displayName ?? (`${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || "—")}
                       </div>
                       <div className={styles.userEmail}>{u.email ?? "—"}</div>
-                      <div className={styles.userId}>{u.uid.slice(0, 12)}...</div>
                     </div>
                   </div>
                   <div className={styles.userActions}>

@@ -129,43 +129,67 @@ export default function AdminCategoriesPage() {
       {filtered.length === 0 ? (
         <div className={styles.emptyState}>Категорії не знайдено</div>
       ) : (
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Назва категорії</th>
-                <th>ID</th>
-                <th>Дії</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((c, idx) => (
-                <tr key={c.id}>
-                  <td style={{ color: "var(--muted)", fontSize: 13 }}>{idx + 1}</td>
-                  <td style={{ fontWeight: 500 }}>{c.name}</td>
-                  <td style={{ fontFamily: "monospace", fontSize: 12, color: "var(--muted)" }}>{c.id}</td>
-                  <td>
-                    <div className={styles.actions}>
-                      <button className={styles.iconBtn} title="Редагувати" onClick={() => openEdit(c)}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                      </button>
-                      <button className={`${styles.iconBtn} ${styles.iconBtnDanger}`} title="Видалити" onClick={() => requestDelete(c.id)}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                          <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
+        <>
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Назва категорії</th>
+                  <th>Дії</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtered.map((c, idx) => (
+                  <tr key={c.id}>
+                    <td style={{ color: "var(--muted)", fontSize: 13 }}>{idx + 1}</td>
+                    <td style={{ fontWeight: 500 }}>{c.name}</td>
+                    <td>
+                      <div className={styles.actions}>
+                        <button className={styles.iconBtn} title="Редагувати" onClick={() => openEdit(c)}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                        </button>
+                        <button className={`${styles.iconBtn} ${styles.iconBtnDanger}`} title="Видалити" onClick={() => requestDelete(c.id)}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                            <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className={styles.productCards}>
+            {filtered.map((c, idx) => (
+              <div key={c.id} className={styles.productCard}>
+                <div className={styles.productCardBody}>
+                  <span className={styles.productCardName}>{idx + 1}. {c.name}</span>
+                </div>
+                <div className={styles.productCardActions}>
+                  <button className={styles.iconBtn} title="Редагувати" onClick={() => openEdit(c)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <button className={`${styles.iconBtn} ${styles.iconBtnDanger}`} title="Видалити" onClick={() => requestDelete(c.id)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {modalOpen && (

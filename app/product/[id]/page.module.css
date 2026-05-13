@@ -530,3 +530,75 @@
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+@media (max-width: 640px) {
+    .main {
+        padding: 14px 14px 48px;
+        gap: 24px;
+    }
+
+    .productSection {
+        padding: 16px;
+        border-radius: 16px;
+        gap: 20px;
+    }
+
+    .title {
+        font-size: 20px;
+    }
+
+    .price {
+        font-size: 18px;
+    }
+
+    .imageCard {
+        width: 70%;
+        padding-top: 70%;
+        align-self: center;
+    }
+
+    .counterCartRow {
+        flex-wrap: wrap;
+    }
+
+    .counter {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .counterBtn {
+        flex: 1;
+        height: 48px;
+        font-size: 22px;
+    }
+
+    .counterVal {
+        flex: 2;
+        min-width: 0;
+        height: 48px;
+        font-size: 15px;
+    }
+
+    .cartButton {
+        width: 100%;
+        padding: 13px 16px;
+    }
+
+    .reviewCard {
+        padding: 14px 16px;
+    }
+
+    .reviewForm {
+        padding: 16px;
+        max-width: 100%;
+    }
+
+    .reviewSubmit {
+        width: 100%;
+        align-self: stretch;
+    }
+
+    .related h2 {
+        font-size: 18px;
+    }
+}
