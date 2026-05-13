@@ -317,28 +317,28 @@
 }
 
 .badgeUser {
-  background: #f0f4f8;
-  color: #445566;
+  background: var(--neutral-badge-bg);
+  color: var(--neutral-badge-text);
 }
 
 .badgePending {
-  background: #fff8e1;
-  color: #c47d00;
+  background: var(--warning-bg);
+  color: var(--warning-text);
 }
 
 .badgeConfirmed {
-  background: #e8f8f1;
-  color: #1a7a4a;
+  background: var(--confirmed-bg);
+  color: var(--confirmed-text);
 }
 
 .badgeDelivered {
-  background: #e8f0fb;
-  color: #1a4a7a;
+  background: var(--info-bg);
+  color: var(--info-text);
 }
 
 .badgeCancelled {
-  background: #fdf0ef;
-  color: #c0392b;
+  background: var(--error-bg);
+  color: var(--error-text);
 }
 
 .badgeOutOfStock {
@@ -347,8 +347,8 @@
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  background: #fdf0ef;
-  color: #c0392b;
+  background: var(--error-bg);
+  color: var(--error-text);
   white-space: nowrap;
 }
 
@@ -388,7 +388,7 @@
   height: 18px;
   padding: 0 5px;
   border-radius: 9px;
-  background: #c0392b;
+  background: var(--danger);
   color: #fff;
   font-size: 11px;
   font-weight: 700;
@@ -406,7 +406,7 @@
 
 .tdStars {
   white-space: nowrap;
-  color: #c47d00;
+  color: var(--warning-text);
   letter-spacing: 1px;
 }
 

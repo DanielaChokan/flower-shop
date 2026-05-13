@@ -122,7 +122,8 @@
     height: 32px;
     border-radius: 50%;
     border: none;
-    background: rgba(255, 255, 255, 0.88);
+    background: var(--surface);
+    opacity: 0.92;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -140,7 +141,8 @@
 }
 
 .heartBtn:hover {
-    background: rgba(255, 255, 255, 1);
+    background: var(--surface);
+    opacity: 1;
     transform: scale(1.12);
 }
 
@@ -151,7 +153,7 @@
 
 .stockLimit {
     font-size: 12px;
-    color: #c62828;
+    color: var(--error-text);
     margin: 0;
     text-align: center;
 }

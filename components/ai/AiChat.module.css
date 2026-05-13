@@ -65,9 +65,9 @@
 }
 
 .bubbleError {
-  background: #fff3f3;
-  color: #b91c1c;
-  border: 1px solid #fca5a5;
+  background: var(--error-bg);
+  color: var(--error-text);
+  border: 1px solid var(--danger);
   border-bottom-left-radius: 2px;
 }
 

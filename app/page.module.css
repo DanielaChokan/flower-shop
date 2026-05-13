@@ -46,7 +46,8 @@
   font-weight: 500;
   max-width: 520px;
   line-height: 1.4;
-  color: #5f5a5c;
+  color: #2a1018;
+  text-shadow: 0 1px 12px rgba(255, 255, 255, 0.6), 0 0 24px rgba(255, 255, 255, 0.4);
 }
 
 .heroSide {
@@ -70,6 +71,7 @@
   position: absolute;
   inset: 0;
   z-index: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.45) 0%, transparent 60%);
 }
 
 .sideCard img {
@@ -86,7 +88,8 @@
   font-weight: 600;
   max-width: 200px;
   line-height: 1.35;
-  color: #6a6466;
+  color: #2a1018;
+  text-shadow: 0 1px 8px rgba(255, 255, 255, 0.5);
 }
 
 .features {

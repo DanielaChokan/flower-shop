@@ -45,9 +45,9 @@
 }
 
 .logoutBtn:hover {
-    background: #fdecea;
-    color: #E74C3C;
-    border-color: #E74C3C;
+    background: var(--error-bg);
+    color: var(--error-text);
+    border-color: var(--error-text);
 }
 
 .loading {
@@ -198,12 +198,12 @@
 
 .errorMsg {
     font-size: 13px;
-    color: #E74C3C;
+    color: var(--error-text);
 }
 
 .successMsg {
     font-size: 13px;
-    color: #27AE60;
+    color: var(--success-text);
     font-weight: 500;
 }
 
@@ -326,8 +326,8 @@
 }
 
 .removeAddressBtn:hover {
-    color: #E74C3C;
-    background: #fdecea;
+    color: var(--error-text);
+    background: var(--error-bg);
 }
 
 .addressActions {
@@ -514,8 +514,8 @@
 
 .bouquetFlowerTag {
     display: inline-block;
-    background: #fff;
-    border: 1px solid var(--border-subtle, #eee);
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
     color: var(--neutral-dark);
     border-radius: 20px;
     padding: 2px 10px;

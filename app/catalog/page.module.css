@@ -36,7 +36,7 @@
     align-items: center;
     gap: 7px;
     padding: 10px 18px;
-    border: 1px solid #e7e1e4;
+    border: 1px solid var(--input-border);
     border-radius: 10px;
     background: var(--surface);
     font-size: 15px;
@@ -60,7 +60,7 @@
 
 .filterDropdown {
     border-radius: 14px;
-    border: 1px solid #ebe6e8;
+    border: 1px solid var(--border-subtle);
     background: var(--surface);
     padding: 0;
     overflow: hidden;
@@ -77,7 +77,7 @@
 .searchInput {
     width: 100%;
     padding: 10px 16px;
-    border: 1px solid #e7e1e4;
+    border: 1px solid var(--input-border);
     border-radius: 10px;
     font-size: 15px;
     color: var(--neutral-text);

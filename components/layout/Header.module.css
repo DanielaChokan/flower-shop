@@ -21,6 +21,10 @@
   font-weight: 700;
 }
 
+.logo img {
+  filter: var(--logo-filter);
+}
+
 .centerText {
   justify-self: center;
   color: var(--foreground);

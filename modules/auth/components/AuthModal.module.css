@@ -85,7 +85,7 @@
 
 .input:focus {
   border-color: var(--primary);
-  background: #fff;
+  background: var(--surface);
 }
 
 .forgotLink {
@@ -105,20 +105,20 @@
 
 .successMsg {
   font-size: 13px;
-  color: #2e7d32;
+  color: var(--success-text);
   text-align: center;
 }
 
 .error {
   font-size: 13px;
-  color: #c0392b;
+  color: var(--error-text);
   text-align: center;
   padding: 4px 0;
 }
 
 .fieldError {
   font-size: 12px;
-  color: #c0392b;
+  color: var(--error-text);
   padding-left: 2px;
   margin: 0;
 }
@@ -239,5 +239,5 @@
 }
 
 .consentLabelError {
-  color: #c0392b;
+  color: var(--error-text);
 }
