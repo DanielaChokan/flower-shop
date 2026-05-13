@@ -79,22 +79,78 @@ export default function ProductPage({ params }: ProductPageProps) {
 			const current = { id: docSnap.id, ...(docSnap.data() as Omit<Product, "id">) };
 			setProduct(current);
 
-			const relatedQuery = query(
-				collection(db, "products"),
-				where("categoryId", "==", current.categoryId ?? ""),
-				limit(5)
-			);
-			const relatedSnap = await getDocs(relatedQuery);
-			const relatedItems = relatedSnap.docs
-				.map((d) => ({ id: d.id, ...(d.data() as Omit<Product, "id">) }))
-				.filter((p) => p.id !== id)
-				.slice(0, 4);
-			setRelated(relatedItems);
+			const recommendedItems: Product[] = [];
+
+			if (user) {
+				const ordersSnap = await getDocs(
+					query(collection(db, "orders"), where("userId", "==", user.uid))
+				);
+
+				const orderedProductIds = ordersSnap.docs.flatMap((d) => {
+					const items = (d.data().items ?? []) as { productId: string }[];
+					return items.map((i) => i.productId).filter((pid) => pid && pid !== id);
+				});
+
+				if (orderedProductIds.length > 0) {
+					const uniqueOrderedIds = Array.from(new Set(orderedProductIds));
+					const orderedProductSnaps = await Promise.all(
+						uniqueOrderedIds.slice(0, 20).map((pid) => getDoc(doc(db, "products", pid)))
+					);
+
+					const categoryCount: Record<string, number> = {};
+					for (const pid of orderedProductIds) {
+						const snap = orderedProductSnaps.find((s) => s.id === pid);
+						if (snap?.exists()) {
+							const cat = (snap.data() as { categoryId?: string }).categoryId ?? "";
+							if (cat) categoryCount[cat] = (categoryCount[cat] ?? 0) + 1;
+						}
+					}
+
+					const topCategories = Object.entries(categoryCount)
+						.sort((a, b) => b[1] - a[1])
+						.map(([catId]) => catId);
+
+					for (const catId of topCategories) {
+						if (recommendedItems.length >= 4) break;
+						const needed = 4 - recommendedItems.length;
+						const existingIds = new Set([id, ...recommendedItems.map((p) => p.id)]);
+						const catSnap = await getDocs(
+							query(collection(db, "products"), where("categoryId", "==", catId), limit(needed * 3 + existingIds.size))
+						);
+						const candidates = catSnap.docs
+							.map((d) => ({ id: d.id, ...(d.data() as Omit<Product, "id">) }))
+							.filter((p) => !existingIds.has(p.id));
+						for (let i = candidates.length - 1; i > 0; i--) {
+							const j = Math.floor(Math.random() * (i + 1));
+							[candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+						}
+						recommendedItems.push(...candidates.slice(0, needed));
+					}
+				}
+			}
+
+			if (recommendedItems.length < 4) {
+				const needed = 4 - recommendedItems.length;
+				const existingIds = new Set([id, ...recommendedItems.map((p) => p.id)]);
+				const relatedSnap = await getDocs(
+					query(collection(db, "products"), where("categoryId", "==", current.categoryId ?? ""), limit(needed * 3 + existingIds.size))
+				);
+				const candidates = relatedSnap.docs
+					.map((d) => ({ id: d.id, ...(d.data() as Omit<Product, "id">) }))
+					.filter((p) => !existingIds.has(p.id));
+				for (let i = candidates.length - 1; i > 0; i--) {
+					const j = Math.floor(Math.random() * (i + 1));
+					[candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+				}
+				recommendedItems.push(...candidates.slice(0, needed));
+			}
+
+			setRelated(recommendedItems);
 
 			await loadReviews();
 			setLoading(false);
 		})();
-	}, [id]);
+	}, [id, user]);
 
 	const handleSubmitReview = async (e: React.FormEvent) => {
 		e.preventDefault();
