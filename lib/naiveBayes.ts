@@ -3,8 +3,6 @@ import { CustomerType } from "./api";
 export type CustomerFeatures = {
   orderCount: number;
   totalSpend: number;
-  avgOrderValue: number;
-  hasGiftKeyword: boolean;
 };
 
 type GaussianParams = { mean: number; variance: number };
@@ -13,31 +11,23 @@ type ClassParams = {
   prior: number;
   orderCount: GaussianParams;
   totalSpend: GaussianParams;
-  avgOrderValue: GaussianParams;
-  hasGiftKeyword: number;
 };
 
 const MODEL: Record<CustomerType, ClassParams> = {
   oneTimePurchase: {
-    prior: 0.4,
-    orderCount:    { mean: 1,    variance: 0.25  },
-    totalSpend:    { mean: 500,  variance: 90000 },
-    avgOrderValue: { mean: 500,  variance: 90000 },
-    hasGiftKeyword: 0.15,
+    prior: 0.3333,
+    orderCount:    { mean: 0.75,  variance: 0.1875 },
+    totalSpend:    { mean: 400,   variance: 1000000 },
   },
   giftOrder: {
-    prior: 0.35,
-    orderCount:    { mean: 2,    variance: 1     },
-    totalSpend:    { mean: 1200, variance: 160000 },
-    avgOrderValue: { mean: 700,  variance: 90000  },
-    hasGiftKeyword: 0.65,
+    prior: 0.3333,
+    orderCount:    { mean: 3,     variance: 0.6667 },
+    totalSpend:    { mean: 1200,  variance: 1000000 },
   },
   regularCustomer: {
-    prior: 0.25,
-    orderCount:    { mean: 6,    variance: 4     },
-    totalSpend:    { mean: 3500, variance: 640000 },
-    avgOrderValue: { mean: 600,  variance: 40000  },
-    hasGiftKeyword: 0.2,
+    prior: 0.3333,
+    orderCount:    { mean: 8,     variance: 4 },
+    totalSpend:    { mean: 3200,  variance: 1000000 },
   },
 };
 
@@ -66,14 +56,8 @@ export function classifyCustomer(features: CustomerFeatures): {
     const logPrior = Math.log(params.prior);
     const logOrderCount  = Math.log(clamp(gaussianPdf(features.orderCount,    params.orderCount)));
     const logTotalSpend  = Math.log(clamp(gaussianPdf(features.totalSpend,     params.totalSpend)));
-    const logAvgOrder    = Math.log(clamp(gaussianPdf(features.avgOrderValue,  params.avgOrderValue)));
 
-    const pKeyword = features.hasGiftKeyword
-      ? params.hasGiftKeyword
-      : 1 - params.hasGiftKeyword;
-    const logKeyword = Math.log(clamp(pKeyword));
-
-    logScores[cls] = logPrior + logOrderCount + logTotalSpend + logAvgOrder + logKeyword;
+    logScores[cls] = logPrior + logOrderCount + logTotalSpend;
   }
 
   const maxLog = Math.max(...Object.values(logScores));
@@ -101,18 +85,11 @@ export function classifyCustomer(features: CustomerFeatures): {
 
 export function buildCustomerFeatures(orders: {
   totalPrice: number;
-  comment?: string | null;
 }[]): CustomerFeatures {
   const orderCount = orders.length;
   const totalSpend = orders.reduce((s, o) => s + o.totalPrice, 0);
-  const avgOrderValue = orderCount > 0 ? totalSpend / orderCount : 0;
 
-  const giftKeywords = ["подарун", "gift", "дарунок", "сюрприз", "surprise"];
-  const hasGiftKeyword = orders.some((o) =>
-    giftKeywords.some((kw) => (o.comment ?? "").toLowerCase().includes(kw))
-  );
-
-  return { orderCount, totalSpend, avgOrderValue, hasGiftKeyword };
+  return { orderCount, totalSpend };
 }
 
 export const CUSTOMER_TYPE_LABELS: Record<CustomerType, string> = {
@@ -122,3 +99,17 @@ export const CUSTOMER_TYPE_LABELS: Record<CustomerType, string> = {
 };
 
 export const REGULAR_CUSTOMER_DISCOUNT = 0.1;
+
+export const DELIVERY_FEE = 200;
+
+export const FREE_DELIVERY_TYPES: CustomerType[] = ["regularCustomer", "giftOrder"];
+
+export function getOrderBenefits(customerType: CustomerType): {
+  discount: number;
+  freeDelivery: boolean;
+} {
+  return {
+    discount: customerType === "regularCustomer" ? REGULAR_CUSTOMER_DISCOUNT : 0,
+    freeDelivery: FREE_DELIVERY_TYPES.includes(customerType),
+  };
+}

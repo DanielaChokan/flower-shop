@@ -1,13 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { addDoc, collection, serverTimestamp, doc, getDoc, getDocs, query, where, updateDoc, runTransaction, increment } from "firebase/firestore";
+import { collection, serverTimestamp, doc, getDoc, getDocs, query, where, updateDoc, runTransaction, increment } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/modules/auth/AuthContext";
 import { useCart } from "@/modules/cart/CartContext";
 import { checkoutFormSchema } from "@/schemas/order.schema";
-import { classifyCustomer, buildCustomerFeatures, REGULAR_CUSTOMER_DISCOUNT } from "@/lib/naiveBayes";
-import { CustomerType } from "@/lib/api";
+import { classifyCustomer, buildCustomerFeatures, getOrderBenefits, DELIVERY_FEE } from "@/lib/naiveBayes";
 import styles from "./CheckoutModal.module.css";
 
 const TIME_SLOTS = [
@@ -63,8 +62,7 @@ export default function CheckoutModal({ onClose }: Props) {
 
   const [savedAddresses, setSavedAddresses] = useState<string[]>([]);
   const [selectedSavedAddress, setSelectedSavedAddress] = useState<string | null>(null);
-  const [customerType, setCustomerType] = useState<CustomerType | null>(null);
-  const [isRegular, setIsRegular] = useState(false);
+  const [existingOrders, setExistingOrders] = useState<{ totalPrice: number }[]>([]);
 
   const [consentChecked, setConsentChecked] = useState(false);
   const [consentError, setConsentError] = useState(false);
@@ -86,12 +84,8 @@ export default function CheckoutModal({ onClose }: Props) {
     getDocs(query(collection(db, "orders"), where("userId", "==", user.uid))).then((snap) => {
       const orders = snap.docs.map((d) => ({
         totalPrice: (d.data().totalPrice as number) ?? 0,
-        comment: d.data().comment as string | null,
       }));
-      const features = buildCustomerFeatures(orders);
-      const result = classifyCustomer(features);
-      setCustomerType(result.customerType);
-      setIsRegular(result.customerType === "regularCustomer");
+      setExistingOrders(orders);
     });
   }, [user]);
 
@@ -138,8 +132,11 @@ export default function CheckoutModal({ onClose }: Props) {
     setStep("confirm");
   };
 
-  const discount = isRegular ? REGULAR_CUSTOMER_DISCOUNT : 0;
-  const discountedTotal = Math.round(total * (1 - discount));
+  const postOrderFeatures = buildCustomerFeatures([...existingOrders, { totalPrice: total }]);
+  const postOrderResult = classifyCustomer(postOrderFeatures);
+  const postOrderType = postOrderResult.customerType;
+  const { discount, freeDelivery } = getOrderBenefits(postOrderType);
+  const discountedTotal = Math.round(total * (1 - discount)) + (freeDelivery ? 0 : DELIVERY_FEE);
 
   const handleConfirm = async () => {
     if (!user) return;
@@ -203,17 +200,11 @@ export default function CheckoutModal({ onClose }: Props) {
           comment: comment.trim() || null,
           createdAt: serverTimestamp(),
           stockReserved: true,
+          customerType: postOrderType,
         });
       });
 
-      const ordersSnap = await getDocs(query(collection(db, "orders"), where("userId", "==", user.uid)));
-      const allOrders = ordersSnap.docs.map((d) => ({
-        totalPrice: (d.data().totalPrice as number) ?? 0,
-        comment: d.data().comment as string | null,
-      }));
-      const updatedFeatures = buildCustomerFeatures([...allOrders, { totalPrice: discountedTotal, comment: comment.trim() || null }]);
-      const updatedResult = classifyCustomer(updatedFeatures);
-      await updateDoc(doc(db, "users", user.uid), { customerType: updatedResult.customerType });
+      await updateDoc(doc(db, "users", user.uid), { customerType: postOrderType });
       void orderRef;
 
       if (user.email) {
@@ -302,9 +293,28 @@ export default function CheckoutModal({ onClose }: Props) {
               {deliveryDate && <li><span>Дата доставки</span><strong>{availableDates.find((d) => d.value === deliveryDate)?.label ?? deliveryDate}</strong></li>}
               {deliveryTime && <li><span>Час доставки</span><strong>{deliveryTime}</strong></li>}
               {comment && <li><span>Коментар</span><strong>{comment}</strong></li>}
-              {isRegular && (
+              <li>
+                <span>Товари</span>
+                {discount > 0 ? (
+                  <strong>
+                    <s style={{ fontWeight: 400, fontSize: 12, color: "var(--muted)", marginRight: 4 }}>{total} грн.</s>
+                    {Math.round(total * (1 - discount))} грн.
+                  </strong>
+                ) : (
+                  <strong>{total} грн.</strong>
+                )}
+              </li>
+              {discount > 0 && (
                 <li><span>Знижка (постійний клієнт)</span><strong style={{ color: "#1a7a4a" }}>−{Math.round(total * discount)} грн.</strong></li>
               )}
+              <li>
+                <span>Доставка</span>
+                {freeDelivery ? (
+                  <strong style={{ color: "#1a7a4a" }}>Безкоштовно</strong>
+                ) : (
+                  <strong>{DELIVERY_FEE} грн.</strong>
+                )}
+              </li>
               <li className={styles.confirmTotal}><span>Сума замовлення</span><strong>{discountedTotal} грн.</strong></li>
             </ul>
             {submitError && <p className={styles.error}>{submitError}</p>}
@@ -460,20 +470,38 @@ export default function CheckoutModal({ onClose }: Props) {
                 {consentError && <span className={styles.fieldError}>Необхідно надати згоду на обробку персональних даних</span>}
               </div>
 
+              <div className={styles.priceBreakdown}>
+                <div className={styles.priceBreakdownRow}>
+                  <span>Товари</span>
+                  {discount > 0 ? (
+                    <span>
+                      <s style={{ color: "var(--muted)", fontSize: 12, marginRight: 4 }}>{total} грн.</s>
+                      {Math.round(total * (1 - discount))} грн.
+                    </span>
+                  ) : (
+                    <span>{total} грн.</span>
+                  )}
+                </div>
+                <div className={styles.priceBreakdownRow}>
+                  <span>Доставка</span>
+                  {freeDelivery ? (
+                    <span style={{ color: "#1a7a4a", fontWeight: 600 }}>Безкоштовно</span>
+                  ) : (
+                    <span>{DELIVERY_FEE} грн.</span>
+                  )}
+                </div>
+              </div>
+
               <div className={styles.payRow}>
                 <div className={styles.payTotal}>
-                  {isRegular && (
+                  {discount > 0 && (
                     <span className={styles.discountBadge}>−10% знижка для постійних клієнтів</span>
                   )}
-                  <span>До сплати</span>
-                  {isRegular ? (
-                    <strong>
-                      <s style={{ fontWeight: 400, fontSize: 13, color: "var(--muted)", marginRight: 6 }}>{total} грн.</s>
-                      {discountedTotal} грн.
-                    </strong>
-                  ) : (
-                    <strong>{total} грн.</strong>
+                  {freeDelivery && (
+                    <span className={styles.discountBadge}>Безкоштовна доставка</span>
                   )}
+                  <span>До сплати</span>
+                  <strong>{discountedTotal} грн.</strong>
                 </div>
                 <button type="submit" className={styles.submitBtn}>
                   Сплатити {discountedTotal} грн.

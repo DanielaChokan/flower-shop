@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Order, OrderStatus, AppUser, Product } from "@/lib/api";
+import { classifyCustomer, buildCustomerFeatures } from "@/lib/naiveBayes";
 import styles from "./page.module.css";
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
@@ -122,13 +123,20 @@ export default function AdminOrdersPage() {
         await updateDoc(doc(db, "orders", order.id), { status: newStatus });
       }
 
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.id === order.id
-            ? { ...o, status: newStatus, stockReserved: shouldRestoreStock ? false : o.stockReserved }
-            : o
-        )
+      const updatedOrders = orders.map((o) =>
+        o.id === order.id
+          ? { ...o, status: newStatus, stockReserved: shouldRestoreStock ? false : o.stockReserved }
+          : o
       );
+      setOrders(updatedOrders);
+
+      const userOrders = updatedOrders.filter(
+        (o) => o.userId === order.userId && o.status !== "cancelled"
+      );
+      const features = buildCustomerFeatures(userOrders.map((o) => ({ totalPrice: o.totalPrice })));
+      const { customerType } = classifyCustomer(features);
+      await updateDoc(doc(db, "users", order.userId), { customerType });
+
       if (order.userEmail && SENDABLE_STATUSES.includes(newStatus)) {
         await fetch("/api/email/order-status", {
           method: "POST",
