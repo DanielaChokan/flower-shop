@@ -467,13 +467,44 @@
 }
 
 @media (max-width: 1024px) {
+    .main {
+        padding: 24px 24px 48px;
+    }
+
     .productSection {
         grid-template-columns: 1fr;
+        padding: 32px;
+        gap: 32px;
     }
 
     .imageCard {
         width: 60%;
         padding-top: 60%;
+    }
+
+    .relatedGrid {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        gap: 16px;
+        padding-bottom: 8px;
+        scrollbar-width: none;
+    }
+
+    .relatedGrid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .relatedGrid > * {
+        flex: 0 0 220px;
+        scroll-snap-align: start;
+        min-width: 0;
+    }
+
+    .relatedCard {
+        height: 100%;
     }
 }
 

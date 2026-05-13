@@ -496,3 +496,9 @@
 .consentLabelError {
   color: var(--error-text);
 }
+
+@media (max-width: 1024px) {
+  .fieldRow {
+    flex-direction: column;
+  }
+}

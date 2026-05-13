@@ -214,3 +214,78 @@
   flex-direction: column;
   gap: 20px;
 }
+
+@media (max-width: 1024px) {
+  .main {
+    padding: 24px 24px 48px;
+    gap: 40px;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+  }
+
+  .heroSide {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: auto;
+  }
+
+  .heroText {
+    padding: 28px 36px;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .heroText h1 {
+    font-size: 24px;
+    max-width: 100%;
+  }
+
+  .sideCard {
+    min-height: 130px;
+  }
+
+  .sideCard h3 {
+    font-size: 17px;
+  }
+
+  .features {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .productGrid4 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .loyalty {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    padding: 24px 28px;
+    gap: 20px;
+    align-items: center;
+    justify-items: center;
+  }
+
+  .loyaltyInfo {
+    grid-column: 1 / 2;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .loyaltyInfo img {
+    display: none;
+  }
+
+  .loyaltyBenefits {
+    grid-column: 2 / 3;
+    justify-self: center;
+  }
+
+  .loyaltyRight {
+    display: none;
+  }
+}

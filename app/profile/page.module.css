@@ -559,3 +559,13 @@
     font-weight: 700;
     color: var(--primary);
 }
+
+@media (max-width: 1024px) {
+    .main {
+        padding: 28px 24px 48px;
+    }
+
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}

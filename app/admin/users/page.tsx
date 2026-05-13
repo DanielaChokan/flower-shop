@@ -25,6 +25,28 @@ function formatDate(ts: unknown): string {
   }
 }
 
+function UserAvatar({ user }: { user: AppUser }) {
+  const [hasError, setHasError] = useState(false);
+  const initial = (user.displayName ?? user.email ?? "?")[0].toUpperCase();
+
+  if (!user.photoURL || hasError) {
+    return (
+      <div className={styles.userAvatarFallback} aria-hidden>
+        {initial}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={user.photoURL}
+      alt=""
+      className={styles.userAvatarImg}
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -122,8 +144,9 @@ export default function AdminUsersPage() {
       {filtered.length === 0 ? (
         <div className={styles.emptyState}>Користувачів не знайдено</div>
       ) : (
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
+        <>
+          <div className={styles.usersTableWrap}>
+            <table className={`${styles.table} ${styles.usersTable}`}>
             <thead>
               <tr>
                 <th>Користувач</th>
@@ -140,19 +163,7 @@ export default function AdminUsersPage() {
                 <tr key={u.uid}>
                   <td>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      {u.photoURL ? (
-                        <img src={u.photoURL} alt="" width={32} height={32} style={{ borderRadius: "50%", objectFit: "cover" }} />
-                      ) : (
-                        <div style={{
-                          width: 32, height: 32, borderRadius: "50%",
-                          background: "var(--neutral-light, #F9EAF0)",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          fontSize: 13, fontWeight: 700, color: "var(--primary, #6C1A35)",
-                          flexShrink: 0,
-                        }}>
-                          {(u.displayName ?? u.email ?? "?")[0].toUpperCase()}
-                        </div>
-                      )}
+                      <UserAvatar user={u} />
                       <div>
                         <div style={{ fontWeight: 500, fontSize: 14 }}>
                           {u.displayName ?? (`${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || "—")}
@@ -222,8 +233,91 @@ export default function AdminUsersPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
+            </table>
+          </div>
+
+          <div className={styles.usersList}>
+            {filtered.map((u) => (
+              <div className={styles.userCard} key={u.uid}>
+                <div className={styles.userHeader}>
+                  <div className={styles.userIdentity}>
+                    <div className={styles.userAvatar}>
+                      <UserAvatar user={u} />
+                    </div>
+                    <div className={styles.userText}>
+                      <div className={styles.userName}>
+                        {u.displayName ?? (`${u.firstName ?? ""} ${u.lastName ?? ""}`.trim() || "—")}
+                      </div>
+                      <div className={styles.userEmail}>{u.email ?? "—"}</div>
+                      <div className={styles.userId}>{u.uid.slice(0, 12)}...</div>
+                    </div>
+                  </div>
+                  <div className={styles.userActions}>
+                    <button
+                      className={styles.iconBtn}
+                      title={u.role === "admin" ? "Зняти права адміна" : "Призначити адміном"}
+                      onClick={() => toggleRole(u)}
+                      disabled={updatingRole === u.uid}
+                    >
+                      {u.role === "admin" ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                          <circle cx="9" cy="7" r="4"/>
+                          <line x1="23" y1="11" x2="17" y2="11"/>
+                        </svg>
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                          <circle cx="9" cy="7" r="4"/>
+                          <line x1="20" y1="8" x2="20" y2="14"/>
+                          <line x1="23" y1="11" x2="17" y2="11"/>
+                        </svg>
+                      )}
+                    </button>
+                    <button
+                      className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+                      title="Видалити користувача"
+                      onClick={() => setConfirmDelete(u.uid)}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div className={styles.userDivider} />
+
+                <div className={styles.userBadges}>
+                  <span className={`${styles.badge} ${u.role === "admin" ? styles.badgeAdmin : styles.badgeUser}`}>
+                    {u.role === "admin" ? "Адмін" : "Користувач"}
+                  </span>
+                  {u.customerType ? (
+                    <span
+                      className={`${styles.badge} ${
+                        u.customerType === "regularCustomer"
+                          ? styles.badgeConfirmed
+                          : u.customerType === "giftOrder"
+                          ? styles.badgePending
+                          : styles.badgeCancelled
+                      }`}
+                    >
+                      {CUSTOMER_TYPE_LABELS[u.customerType]}
+                    </span>
+                  ) : (
+                    <span style={{ color: "var(--muted)", fontSize: 12 }}>—</span>
+                  )}
+                </div>
+
+                <div className={styles.userMeta}>
+                  <span>Телефон: {u.phone ?? "—"}</span>
+                  <span>Зареєстрований: {formatDate(u.createdAt)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {confirmDelete && (

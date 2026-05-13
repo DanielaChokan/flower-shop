@@ -101,3 +101,13 @@
   color: var(--primary-dark);
   font-size: 12px;
 }
+
+@media (max-width: 1024px) {
+  .wrapper {
+    padding: 0 32px;
+  }
+
+  .card {
+    flex: 0 0 calc(33.333% - 11px);
+  }
+}

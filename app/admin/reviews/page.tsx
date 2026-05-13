@@ -162,60 +162,51 @@ export default function AdminReviewsPage() {
       ) : filtered.length === 0 ? (
         <p className={styles.emptyState}>Відгуків не знайдено</p>
       ) : (
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Автор</th>
-                <th>Товар</th>
-                <th>Оцінка</th>
-                <th>Відгук</th>
-                <th>Дата</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((r) => (
-                <tr key={r.id}>
-                  <td className={styles.tdNoWrap}>{r.userName}</td>
-                  <td className={styles.tdNoWrap}>{r.productName}</td>
-                  <td className={styles.tdStars}>
-                    {getStars(r.rating)}
-                  </td>
-                  <td className={styles.tdText}>{r.text}</td>
-                  <td className={styles.tdDate}>
-                    {formatDate(r.createdAt)}
-                  </td>
-                  <td>
-                    <div className={styles.actions}>
-                      <button
-                        className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
-                        title="Видалити відгук"
-                        onClick={() => setConfirmId(r.id)}
-                      >
-                        <svg
-                          width="15"
-                          height="15"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="3 6 5 6 21 6" />
-                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                          <path d="M10 11v6" />
-                          <path d="M14 11v6" />
-                          <path d="M9 6V4h6v2" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className={styles.reviewsList}>
+          {filtered.map((r) => (
+            <div className={styles.reviewCard} key={r.id}>
+              <div className={styles.reviewHeader}>
+                <div>
+                  <div className={styles.reviewAuthor}>{r.userName}</div>
+                  <div className={styles.reviewProduct}>{r.productName}</div>
+                </div>
+                <div className={styles.reviewRating}>
+                  <span className={styles.reviewStars}>{getStars(r.rating)}</span>
+                  <span className={styles.reviewScore}>{r.rating.toFixed(1)}</span>
+                </div>
+              </div>
+
+              <p className={styles.reviewText}>{r.text}</p>
+
+              <div className={styles.reviewFooter}>
+                <span className={styles.reviewDate}>{formatDate(r.createdAt)}</span>
+                <div className={styles.actions}>
+                  <button
+                    className={`${styles.iconBtn} ${styles.iconBtnDanger}`}
+                    title="Видалити відгук"
+                    onClick={() => setConfirmId(r.id)}
+                  >
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M10 11v6" />
+                      <path d="M14 11v6" />
+                      <path d="M9 6V4h6v2" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

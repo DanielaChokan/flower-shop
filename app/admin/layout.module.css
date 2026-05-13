@@ -67,3 +67,27 @@
   padding: 32px 36px;
   overflow-y: auto;
 }
+
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 64px;
+  }
+
+  .nav {
+    padding: 0 8px;
+    align-items: center;
+  }
+
+  .navLink {
+    justify-content: center;
+    padding: 11px;
+  }
+
+  .navLink span {
+    display: none;
+  }
+
+  .content {
+    padding: 24px 20px;
+  }
+}

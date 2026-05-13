@@ -70,3 +70,14 @@
     text-align: center;
     color: var(--neutral-dark);
 }
+
+@media (max-width: 1024px) {
+    .main {
+        padding: 24px 24px 48px;
+    }
+
+    .grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+    }
+}
