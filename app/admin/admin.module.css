@@ -394,3 +394,34 @@
   font-weight: 700;
   line-height: 1;
 }
+
+.reviewsCount {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.tdNoWrap {
+  white-space: nowrap;
+}
+
+.tdStars {
+  white-space: nowrap;
+  color: #c47d00;
+  letter-spacing: 1px;
+}
+
+.tdText {
+  max-width: 360px;
+  word-break: break-word;
+}
+
+.tdDate {
+  white-space: nowrap;
+  color: var(--muted);
+}
+
+.modalNote {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 8px;
+}
