@@ -204,6 +204,12 @@
     padding: 4px 12px;
 }
 
+.stockLimit {
+    font-size: 13px;
+    color: #c62828;
+    margin: 0;
+}
+
 .description {
     font-size: 14px;
     color: var(--neutral-text);

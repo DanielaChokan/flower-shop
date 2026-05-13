@@ -63,6 +63,7 @@ export default function FavouritesPage() {
                                     price={p.price}
                                     image={p.image}
                                     rating={p.rating}
+                                    stock={p.stock}
                                 />
                             ))}
                         </div>

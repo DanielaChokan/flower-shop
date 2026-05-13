@@ -12,9 +12,10 @@ type ProductCardProps = {
     name: string;
     price: number;
     image: string;
-    rating: number;
+    rating?: number;
     inCart?: boolean;
     quantity?: number;
+    stock?: number;
     onQuantityChange?: (quantity: number) => void;
     isCustom?: boolean;
 };
@@ -32,6 +33,7 @@ export default function ProductCard({
     rating,
     inCart = false,
     quantity = 1,
+    stock,
     onQuantityChange,
     isCustom = false,
 }: ProductCardProps) {
@@ -48,7 +50,7 @@ export default function ProductCard({
 
     const handleAddToCart = () => {
         if (!user) { openAuth(); return; }
-        addItem({ id, name, price, image, rating });
+        addItem({ id, name, price, image, rating: rating ?? 0, stock });
     };
 
     return (
@@ -86,27 +88,33 @@ export default function ProductCard({
                     <h3>{name}</h3>
                 </Link>
                 <p className={styles.price}>{price} грн.</p>
-                {!isCustom && <p className={styles.rating}>{getStars(rating)}</p>}
+                {!isCustom && <p className={styles.rating}>{getStars(rating ?? 0)}</p>}
                 {inCart ? (
-                    <div className={styles.quantityRow}>
-                        <button
-                            type="button"
-                            className={styles.qtyBtn}
-                            onClick={() => onQuantityChange?.(quantity - 1)}
-                            aria-label="Зменшити кількість"
-                        >
-                            −
-                        </button>
-                        <span className={styles.qtyValue}>{quantity}</span>
-                        <button
-                            type="button"
-                            className={styles.qtyBtn}
-                            onClick={() => onQuantityChange?.(quantity + 1)}
-                            aria-label="Збільшити кількість"
-                        >
-                            +
-                        </button>
-                    </div>
+                    <>
+                        <div className={styles.quantityRow}>
+                            <button
+                                type="button"
+                                className={styles.qtyBtn}
+                                onClick={() => onQuantityChange?.(quantity - 1)}
+                                aria-label="Зменшити кількість"
+                            >
+                                −
+                            </button>
+                            <span className={styles.qtyValue}>{quantity}</span>
+                            <button
+                                type="button"
+                                className={styles.qtyBtn}
+                                onClick={() => onQuantityChange?.(quantity + 1)}
+                                disabled={stock !== undefined && quantity >= stock}
+                                aria-label="Збільшити кількість"
+                            >
+                                +
+                            </button>
+                        </div>
+                        {stock !== undefined && quantity === stock && stock > 0 && (
+                            <p className={styles.stockLimit}>Це максимальна кількість в наявності</p>
+                        )}
+                    </>
                 ) : (
                     <button type="button" onClick={handleAddToCart}>Додати до кошика</button>
                 )}

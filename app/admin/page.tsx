@@ -10,6 +10,8 @@ import {
   getDoc,
   orderBy,
   query,
+  runTransaction,
+  increment,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Order, OrderStatus, AppUser, Product } from "@/lib/api";
@@ -98,9 +100,34 @@ export default function AdminOrdersPage() {
     if (!newStatus || newStatus === order.status) return;
     setUpdating((p) => ({ ...p, [order.id]: true }));
     try {
-      await updateDoc(doc(db, "orders", order.id), { status: newStatus });
+      const shouldRestoreStock =
+        newStatus === "cancelled" &&
+        order.stockReserved === true &&
+        order.status !== "cancelled";
+
+      if (shouldRestoreStock) {
+        const nonCustomItems = order.items.filter((i) => !i.customName);
+        await runTransaction(db, async (transaction) => {
+          nonCustomItems.forEach((i) => {
+            transaction.update(doc(db, "products", i.productId), {
+              stock: increment(i.quantity),
+            });
+          });
+          transaction.update(doc(db, "orders", order.id), {
+            status: newStatus,
+            stockReserved: false,
+          });
+        });
+      } else {
+        await updateDoc(doc(db, "orders", order.id), { status: newStatus });
+      }
+
       setOrders((prev) =>
-        prev.map((o) => (o.id === order.id ? { ...o, status: newStatus } : o))
+        prev.map((o) =>
+          o.id === order.id
+            ? { ...o, status: newStatus, stockReserved: shouldRestoreStock ? false : o.stockReserved }
+            : o
+        )
       );
       if (order.userEmail && SENDABLE_STATUSES.includes(newStatus)) {
         await fetch("/api/email/order-status", {

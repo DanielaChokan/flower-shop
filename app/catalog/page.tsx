@@ -172,6 +172,7 @@ export default function CatalogPage() {
                                     price={product.price}
                                     image={product.image}
                                     rating={product.rating}
+                                    stock={product.stock}
                                 />
                             ))}
                         </div>

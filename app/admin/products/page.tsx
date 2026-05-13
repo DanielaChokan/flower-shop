@@ -99,6 +99,7 @@ export default function AdminProductsPage() {
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [filterOutOfStock, setFilterOutOfStock] = useState(false);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -191,9 +192,12 @@ export default function AdminProductsPage() {
     }
   };
 
+  const outOfStockCount = products.filter((p) => (p.stock ?? 0) === 0).length;
+
   const filtered = products.filter((p) => {
-    if (!search.trim()) return true;
-    return p.name.toLowerCase().includes(search.toLowerCase());
+    if (search.trim() && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
+    if (filterOutOfStock && (p.stock ?? 0) !== 0) return false;
+    return true;
   });
 
   const getCategoryName = (id?: string) =>
@@ -225,6 +229,12 @@ export default function AdminProductsPage() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <button
+          className={`${styles.filterBtn} ${filterOutOfStock ? styles.filterBtnActive : ""}`}
+          onClick={() => setFilterOutOfStock((v) => !v)}
+        >
+          Немає в наявності{outOfStockCount > 0 && <span className={styles.filterBtnBadge}>{outOfStockCount}</span>}
+        </button>
       </div>
 
       {filtered.length === 0 ? (
@@ -259,7 +269,11 @@ export default function AdminProductsPage() {
                   <td style={{ fontWeight: 500 }}>{p.name}</td>
                   <td style={{ fontWeight: 600, color: "var(--primary, #6C1A35)" }}>{p.price} грн</td>
                   <td style={{ color: "var(--muted, #7A6B6F)", fontSize: 13 }}>{getCategoryName(p.categoryId)}</td>
-                  <td style={{ fontSize: 13 }}>{p.stock ?? "—"}</td>
+                  <td style={{ fontSize: 13 }}>
+                    {(p.stock ?? 0) === 0
+                      ? <span className={styles.badgeOutOfStock}>Немає</span>
+                      : p.stock}
+                  </td>
                   <td style={{ fontSize: 13 }}>{p.rating !== undefined ? `${"★".repeat(Math.round(p.rating))} ${p.rating}` : "—"}</td>
                   <td>
                     <div className={styles.actions}>

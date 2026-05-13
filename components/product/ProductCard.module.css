@@ -149,6 +149,13 @@
     stroke: var(--primary);
 }
 
+.stockLimit {
+    font-size: 12px;
+    color: #c62828;
+    margin: 0;
+    text-align: center;
+}
+
 .customBadge {
     font-size: 11px;
     font-weight: 600;

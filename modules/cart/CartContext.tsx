@@ -14,6 +14,7 @@ export type CartItem = {
   image: string;
   rating: number;
   quantity: number;
+  stock?: number;
   isCustom?: boolean;
   flowers?: CartFlower[];
 };
@@ -65,8 +66,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           }
           const productSnap = await getDoc(doc(db, "products", s.id));
           if (!productSnap.exists()) return null;
-          const p = productSnap.data() as { name: string; price: number; image: string; rating: number };
-          return { id: s.id, name: p.name, price: p.price, image: p.image, rating: p.rating, quantity: s.quantity };
+          const p = productSnap.data() as { name: string; price: number; image: string; rating: number; stock?: number };
+          return { id: s.id, name: p.name, price: p.price, image: p.image, rating: p.rating, stock: p.stock, quantity: s.quantity };
         })
       );
       setItems(enriched.filter(Boolean) as CartItem[]);
@@ -110,8 +111,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const existing = prev.find((i) => i.id === product.id);
       let next: CartItem[];
       if (existing) {
+        const newQty = existing.quantity + 1;
+        const clamped = existing.stock !== undefined ? Math.min(newQty, existing.stock) : newQty;
         next = prev.map((i) =>
-          i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+          i.id === product.id ? { ...i, quantity: clamped } : i
         );
       } else {
         next = [...prev, { ...product, quantity: 1 }];
@@ -136,7 +139,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (quantity <= 0) {
         next = prev.filter((i) => i.id !== id);
       } else {
-        next = prev.map((i) => (i.id === id ? { ...i, quantity } : i));
+        const item = prev.find((i) => i.id === id);
+        const clamped = item?.stock !== undefined ? Math.min(quantity, item.stock) : quantity;
+        next = prev.map((i) => (i.id === id ? { ...i, quantity: clamped } : i));
       }
       if (user) saveToFirestore(next, user.uid);
       return next;

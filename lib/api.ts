@@ -35,9 +35,11 @@ export type Order = {
   recipient?: string
   phone?: string
   deliveryTime?: string
+  deliveryDate?: string
   deliveryAddress?: string
   comment?: string
   createdAt: unknown
+  stockReserved?: boolean
 }
 
 export type Review = {

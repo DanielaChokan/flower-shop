@@ -10,6 +10,7 @@ import {
   deleteDoc,
   query,
   orderBy,
+  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Category } from "@/lib/api";
@@ -25,6 +26,7 @@ export default function AdminCategoriesPage() {
   const [nameError, setNameError] = useState("");
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [blockDelete, setBlockDelete] = useState<{ categoryName: string; count: number } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = useCallback((msg: string) => {
@@ -73,6 +75,16 @@ export default function AdminCategoriesPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const requestDelete = async (id: string) => {
+    const productsSnap = await getDocs(query(collection(db, "products"), where("categoryId", "==", id)));
+    if (!productsSnap.empty) {
+      const cat = categories.find((c) => c.id === id);
+      setBlockDelete({ categoryName: cat?.name ?? id, count: productsSnap.size });
+      return;
+    }
+    setConfirmDelete(id);
   };
 
   const handleDelete = async (id: string) => {
@@ -141,7 +153,7 @@ export default function AdminCategoriesPage() {
                           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                       </button>
-                      <button className={`${styles.iconBtn} ${styles.iconBtnDanger}`} title="Видалити" onClick={() => setConfirmDelete(c.id)}>
+                      <button className={`${styles.iconBtn} ${styles.iconBtnDanger}`} title="Видалити" onClick={() => requestDelete(c.id)}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
                           <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
@@ -181,11 +193,25 @@ export default function AdminCategoriesPage() {
         </div>
       )}
 
+      {blockDelete && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h3>Неможливо видалити категорію</h3>
+            <p style={{ color: "var(--muted)", fontSize: 14, margin: "0 0 20px" }}>
+              Категорія <strong>«{blockDelete.categoryName}»</strong> містить {blockDelete.count} {blockDelete.count === 1 ? "товар" : blockDelete.count < 5 ? "товари" : "товарів"}. Спочатку перепризначте або видаліть ці товари.
+            </p>
+            <div className={styles.modalActions}>
+              <button className={styles.btnPrimary} onClick={() => setBlockDelete(null)}>Зрозуміло</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {confirmDelete && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
             <h3>Видалити категорію?</h3>
-            <p style={{ color: "var(--muted)", fontSize: 14, margin: "0 0 20px" }}>Цю дію не можна відмінити. Товари цієї категорії не будуть видалені.</p>
+            <p style={{ color: "var(--muted)", fontSize: 14, margin: "0 0 20px" }}>Цю дію не можна відмінити.</p>
             <div className={styles.modalActions}>
               <button className={styles.btnSecondary} onClick={() => setConfirmDelete(null)}>Скасувати</button>
               <button className={styles.btnDanger} onClick={() => handleDelete(confirmDelete)}>Видалити</button>

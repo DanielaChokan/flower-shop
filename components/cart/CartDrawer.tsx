@@ -45,6 +45,7 @@ export default function CartDrawer() {
                 rating={item.rating}
                 inCart
                 quantity={item.quantity}
+                stock={item.stock}
                 onQuantityChange={(qty: number) => updateQuantity(item.id, qty)}
                 isCustom={item.isCustom}
               />

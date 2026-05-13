@@ -18,7 +18,7 @@ export default function ProductsSection() {
     });
   }, []);
 
-  const top12 = [...products].sort((a, b) => b.rating - a.rating).slice(0, 15);
+  const top12 = [...products].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0)).slice(0, 15);
 
   return (
     <div className={styles.productGrid4}>
@@ -30,6 +30,7 @@ export default function ProductsSection() {
           price={product.price}
           image={product.image}
           rating={product.rating}
+          stock={product.stock}
         />
       ))}
     </div>

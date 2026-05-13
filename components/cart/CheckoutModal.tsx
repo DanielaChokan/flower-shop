@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { addDoc, collection, serverTimestamp, doc, getDoc, getDocs, query, where, updateDoc } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp, doc, getDoc, getDocs, query, where, updateDoc, runTransaction, increment } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/modules/auth/AuthContext";
 import { useCart } from "@/modules/cart/CartContext";
@@ -57,7 +57,7 @@ export default function CheckoutModal({ onClose }: Props) {
   const [deliveryDate, setDeliveryDate] = useState(getAvailableDates()[0].value);
   const [deliveryTime, setDeliveryTime] = useState("");
   const [comment, setComment] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<"recipient" | "phone" | "address", string>>>({});
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<"recipient" | "phone" | "address" | "deliveryTime", string>>>({});
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState("");
 
@@ -112,11 +112,11 @@ export default function CheckoutModal({ onClose }: Props) {
 
   const handlePay = (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = checkoutFormSchema.safeParse({ recipient, phone, address, deliveryTime, comment });
+    const parsed = checkoutFormSchema.safeParse({ recipient, phone, address, deliveryDate, deliveryTime, comment });
     if (!parsed.success) {
-      const errs: Partial<Record<"recipient" | "phone" | "address", string>> = {};
+      const errs: Partial<Record<"recipient" | "phone" | "address" | "deliveryTime", string>> = {};
       for (const issue of parsed.error.issues) {
-        const field = issue.path[0] as "recipient" | "phone" | "address";
+        const field = issue.path[0] as "recipient" | "phone" | "address" | "deliveryTime";
         if (!errs[field]) errs[field] = issue.message;
       }
       setFieldErrors(errs);
@@ -134,23 +134,64 @@ export default function CheckoutModal({ onClose }: Props) {
     setLoading(true);
     setSubmitError("");
     try {
-      const orderRef = await addDoc(collection(db, "orders"), {
-        userId: user.uid,
-        items: items.map((i) => ({
-          productId: i.id,
-          quantity: i.quantity,
-          price: i.price,
-          ...(i.isCustom ? { customName: i.name, flowers: i.flowers ?? [] } : {}),
-        })),
-        totalPrice: discountedTotal,
-        status: "pending",
-        recipient: recipient.trim(),
-        phone: phone.trim(),
-        deliveryAddress: address.trim(),
-        deliveryDate: deliveryDate || null,
-        deliveryTime: deliveryTime || null,
-        comment: comment.trim() || null,
-        createdAt: serverTimestamp(),
+      const nonCustomItems = items.filter((i) => !i.isCustom);
+
+      if (nonCustomItems.length > 0) {
+        const stockSnaps = await Promise.all(
+          nonCustomItems.map((i) => getDoc(doc(db, "products", i.id)))
+        );
+        for (let idx = 0; idx < nonCustomItems.length; idx++) {
+          const snap = stockSnaps[idx];
+          const available = snap.exists() ? ((snap.data().stock as number) ?? 0) : 0;
+          if (available < nonCustomItems[idx].quantity) {
+            const name = nonCustomItems[idx].name;
+            setSubmitError(
+              `Товар "${name}" є в наявності лише ${available} шт., а у кошику ${nonCustomItems[idx].quantity} шт.`
+            );
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
+      let orderRef!: ReturnType<typeof doc>;
+      await runTransaction(db, async (transaction) => {
+        if (nonCustomItems.length > 0) {
+          const stockSnaps = await Promise.all(
+            nonCustomItems.map((i) => transaction.get(doc(db, "products", i.id)))
+          );
+          for (let idx = 0; idx < nonCustomItems.length; idx++) {
+            const snap = stockSnaps[idx];
+            const available = snap.exists() ? ((snap.data().stock as number) ?? 0) : 0;
+            if (available < nonCustomItems[idx].quantity) {
+              throw new Error(`nostock:${nonCustomItems[idx].name}:${available}:${nonCustomItems[idx].quantity}`);
+            }
+          }
+          nonCustomItems.forEach((i) => {
+            transaction.update(doc(db, "products", i.id), { stock: increment(-i.quantity) });
+          });
+        }
+        const newOrderRef = doc(collection(db, "orders"));
+        orderRef = newOrderRef;
+        transaction.set(newOrderRef, {
+          userId: user.uid,
+          items: items.map((i) => ({
+            productId: i.id,
+            quantity: i.quantity,
+            price: i.price,
+            ...(i.isCustom ? { customName: i.name, flowers: i.flowers ?? [] } : {}),
+          })),
+          totalPrice: discountedTotal,
+          status: "pending",
+          recipient: recipient.trim(),
+          phone: phone.trim(),
+          deliveryAddress: address.trim(),
+          deliveryDate: deliveryDate || null,
+          deliveryTime: deliveryTime || null,
+          comment: comment.trim() || null,
+          createdAt: serverTimestamp(),
+          stockReserved: true,
+        });
       });
 
       const ordersSnap = await getDocs(query(collection(db, "orders"), where("userId", "==", user.uid)));
@@ -193,8 +234,16 @@ export default function CheckoutModal({ onClose }: Props) {
 
       clearCart();
       setStep("success");
-    } catch {
-      setSubmitError("Помилка при оформленні замовлення. Спробуйте ще раз.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "";
+      if (msg.startsWith("nostock:")) {
+        const [, name, available, requested] = msg.split(":");
+        setSubmitError(
+          `Товар "${name}" є в наявності лише ${available} шт., а у кошику ${requested} шт.`
+        );
+      } else {
+        setSubmitError("Помилка при оформленні замовлення. Спробуйте ще раз.");
+      }
     } finally {
       setLoading(false);
     }
@@ -351,25 +400,35 @@ export default function CheckoutModal({ onClose }: Props) {
                   <div className={styles.timeSlots}>
                     {TIME_SLOTS.map((slot) => {
                       const busy = busySlots.includes(slot);
+                      const now = new Date();
+                      const todayValue = now.toISOString().slice(0, 10);
+                      const isPast = deliveryDate === todayValue && (() => {
+                        const [h, m] = slot.split(":").map(Number);
+                        return h * 60 + m <= now.getHours() * 60 + now.getMinutes();
+                      })();
+                      const disabled = busy || isPast;
                       return (
                         <button
                           key={slot}
                           type="button"
-                          disabled={busy}
-                          onClick={() => setDeliveryTime(busy ? deliveryTime : slot)}
+                          disabled={disabled}
+                          onClick={() => { if (!disabled) { setDeliveryTime(slot); setFieldErrors((p) => ({ ...p, deliveryTime: undefined })); } }}
                           className={[
                             styles.timeSlot,
                             deliveryTime === slot ? styles.timeSlotActive : "",
                             busy ? styles.timeSlotBusy : "",
+                            isPast && !busy ? styles.timeSlotBusy : "",
                           ].join(" ").trim()}
                         >
                           {slot}
                           {busy && <span className={styles.busyLabel}>Зайнято</span>}
+                          {isPast && !busy && <span className={styles.busyLabel}>Минув</span>}
                         </button>
                       );
                     })}
                   </div>
                 )}
+                {fieldErrors.deliveryTime && <span className={styles.fieldError}>{fieldErrors.deliveryTime}</span>}
               </div>
 
               <div className={styles.field}>

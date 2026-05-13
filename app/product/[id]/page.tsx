@@ -129,8 +129,10 @@ export default function ProductPage({ params }: ProductPageProps) {
 	const handleAddToCart = () => {
 		if (!user) { openAuth(); return; }
 		if (!product) return;
-		addItem({ id: product.id, name: product.name, price: product.price, image: product.image, rating: product.rating });
-		if (quantity > 1) updateQuantity(product.id, quantity);
+		if (product.stock !== undefined && product.stock <= 0) return;
+		const clampedQty = product.stock !== undefined ? Math.min(quantity, product.stock) : quantity;
+		addItem({ id: product.id, name: product.name, price: product.price, image: product.image, rating: product.rating ?? 0, stock: product.stock });
+		if (clampedQty > 1) updateQuantity(product.id, clampedQty);
 	};
 
 	if (loading) {
@@ -179,7 +181,7 @@ export default function ProductPage({ params }: ProductPageProps) {
 						<h1 className={styles.title}>{product.name}</h1>
 						<div className={styles.ratingRow}>
 							<span className={styles.stars}>
-								{getStars(product.rating)}
+								{getStars(product.rating ?? 0)}
 							</span>
 							<span className={styles.reviews}>
 								({reviews.length} {reviews.length === 1 ? "відгук" : reviews.length >= 2 && reviews.length <= 4 ? "відгуки" : "відгуків"})
@@ -208,15 +210,19 @@ export default function ProductPage({ params }: ProductPageProps) {
 										type="button"
 										aria-label="Збільшити"
 										className={styles.counterBtn}
-										onClick={() => setQuantity((q) => q + 1)}
+										disabled={product.stock !== undefined && quantity >= product.stock}
+										onClick={() => setQuantity((q) => product.stock !== undefined ? Math.min(product.stock, q + 1) : q + 1)}
 									>
 										+
 									</button>
 								</div>
-								<button type="button" className={styles.cartButton} onClick={handleAddToCart}>
+								<button type="button" className={styles.cartButton} onClick={handleAddToCart} disabled={product.stock !== undefined && product.stock <= 0}>
 									В кошик
 								</button>
 							</div>
+							{product.stock !== undefined && quantity == product.stock && product.stock > 0 && (
+								<p className={styles.stockLimit}>Це максимальна кількість в наявності</p>
+							)}
 							<button
 								type="button"
 								className={`${styles.favourite}${isFavourite(id) ? ` ${styles.favouriteActive}` : ""}`}
@@ -253,7 +259,7 @@ export default function ProductPage({ params }: ProductPageProps) {
 												{item.price} грн.
 											</p>
 											<p className={styles.relatedStars}>
-												{getStars(item.rating)}
+												{getStars(item.rating ?? 0)}
 											</p>
 										</div>
 									</article>
