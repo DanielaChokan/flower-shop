@@ -445,3 +445,34 @@
   border-radius: 6px;
   padding: 1px 6px;
 }
+
+.consentRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.consentLabel,
+.consentLabelError {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.consentLabel input[type="checkbox"],
+.consentLabelError input[type="checkbox"] {
+  flex-shrink: 0;
+  margin-top: 2px;
+  width: 15px;
+  height: 15px;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.consentLabelError {
+  color: #c0392b;
+}

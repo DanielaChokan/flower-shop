@@ -66,6 +66,9 @@ export default function CheckoutModal({ onClose }: Props) {
   const [customerType, setCustomerType] = useState<CustomerType | null>(null);
   const [isRegular, setIsRegular] = useState(false);
 
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentError, setConsentError] = useState(false);
+
   const [busySlots, setBusySlots] = useState<string[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
 
@@ -113,6 +116,7 @@ export default function CheckoutModal({ onClose }: Props) {
   const handlePay = (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = checkoutFormSchema.safeParse({ recipient, phone, address, deliveryDate, deliveryTime, comment });
+    let hasErrors = false;
     if (!parsed.success) {
       const errs: Partial<Record<"recipient" | "phone" | "address" | "deliveryTime", string>> = {};
       for (const issue of parsed.error.issues) {
@@ -120,9 +124,17 @@ export default function CheckoutModal({ onClose }: Props) {
         if (!errs[field]) errs[field] = issue.message;
       }
       setFieldErrors(errs);
-      return;
+      hasErrors = true;
+    } else {
+      setFieldErrors({});
     }
-    setFieldErrors({});
+    if (!consentChecked) {
+      setConsentError(true);
+      hasErrors = true;
+    } else {
+      setConsentError(false);
+    }
+    if (hasErrors) return;
     setStep("confirm");
   };
 
@@ -398,34 +410,28 @@ export default function CheckoutModal({ onClose }: Props) {
                   <p className={styles.slotsLoading}>Перевірка доступності...</p>
                 ) : (
                   <div className={styles.timeSlots}>
-                    {TIME_SLOTS.map((slot) => {
+                    {TIME_SLOTS.filter((slot) => {
                       const busy = busySlots.includes(slot);
                       const now = new Date();
                       const todayValue = now.toISOString().slice(0, 10);
                       const isPast = deliveryDate === todayValue && (() => {
                         const [h, m] = slot.split(":").map(Number);
-                        return h * 60 + m <= now.getHours() * 60 + now.getMinutes();
+                        return h * 60 + m < now.getHours() * 60 + now.getMinutes() + 60;
                       })();
-                      const disabled = busy || isPast;
-                      return (
-                        <button
-                          key={slot}
-                          type="button"
-                          disabled={disabled}
-                          onClick={() => { if (!disabled) { setDeliveryTime(slot); setFieldErrors((p) => ({ ...p, deliveryTime: undefined })); } }}
-                          className={[
-                            styles.timeSlot,
-                            deliveryTime === slot ? styles.timeSlotActive : "",
-                            busy ? styles.timeSlotBusy : "",
-                            isPast && !busy ? styles.timeSlotBusy : "",
-                          ].join(" ").trim()}
-                        >
-                          {slot}
-                          {busy && <span className={styles.busyLabel}>Зайнято</span>}
-                          {isPast && !busy && <span className={styles.busyLabel}>Минув</span>}
-                        </button>
-                      );
-                    })}
+                      return !busy && !isPast;
+                    }).map((slot) => (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => { setDeliveryTime(slot); setFieldErrors((p) => ({ ...p, deliveryTime: undefined })); }}
+                        className={[
+                          styles.timeSlot,
+                          deliveryTime === slot ? styles.timeSlotActive : "",
+                        ].join(" ").trim()}
+                      >
+                        {slot}
+                      </button>
+                    ))}
                   </div>
                 )}
                 {fieldErrors.deliveryTime && <span className={styles.fieldError}>{fieldErrors.deliveryTime}</span>}
@@ -440,6 +446,18 @@ export default function CheckoutModal({ onClose }: Props) {
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                 />
+              </div>
+
+              <div className={styles.consentRow}>
+                <label className={consentError ? styles.consentLabelError : styles.consentLabel}>
+                  <input
+                    type="checkbox"
+                    checked={consentChecked}
+                    onChange={(e) => { setConsentChecked(e.target.checked); if (e.target.checked) setConsentError(false); }}
+                  />
+                  Я погоджуюся на обробку моїх персональних даних
+                </label>
+                {consentError && <span className={styles.fieldError}>Необхідно надати згоду на обробку персональних даних</span>}
               </div>
 
               <div className={styles.payRow}>

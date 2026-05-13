@@ -19,12 +19,15 @@ export default function AuthModal() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [consentChecked, setConsentChecked] = useState(false);
+  const [consentError, setConsentError] = useState(false);
 
   if (!isAuthOpen) return null;
 
   const clearForm = () => {
     setEmail(""); setPassword(""); setFirstName(""); setLastName("");
     setError(""); setFieldErrors({}); setResetSent(false);
+    setConsentChecked(false); setConsentError(false);
   };
 
   const switchMode = (m: Mode) => { setMode(m); clearForm(); };
@@ -52,6 +55,11 @@ export default function AuthModal() {
         setFieldErrors(errs);
         return;
       }
+      if (!consentChecked) {
+        setConsentError(true);
+        return;
+      }
+      setConsentError(false);
     }
 
     setLoading(true);
@@ -218,6 +226,18 @@ export default function AuthModal() {
                   autoComplete="new-password"
                 />
                 {fieldErrors.password && <p className={styles.fieldError}>{fieldErrors.password}</p>}
+              </div>
+
+              <div className={styles.consentRow}>
+                <label className={consentError ? styles.consentLabelError : styles.consentLabel}>
+                  <input
+                    type="checkbox"
+                    checked={consentChecked}
+                    onChange={(e) => { setConsentChecked(e.target.checked); if (e.target.checked) setConsentError(false); }}
+                  />
+                  Я погоджуюся на обробку моїх персональних даних
+                </label>
+                {consentError && <p className={styles.fieldError}>Необхідно надати згоду на обробку персональних даних</p>}
               </div>
 
               {error && <p className={styles.error}>{error}</p>}
