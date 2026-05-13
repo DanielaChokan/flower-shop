@@ -10,6 +10,7 @@ import CartDrawer from "@/components/cart/CartDrawer";
 import AuthModalHost from "@/modules/auth/components/AuthModalHost";
 import LoadingGuard from "@/components/UI/LoadingGuard";
 import AuthRequiredListener from "@/components/UI/AuthRequiredListener";
+import ScrollToTop from "@/components/UI/ScrollToTop";
 import { AiChatProvider } from "@/modules/ai/AiChatContext";
 import AiChatDrawer from "@/components/ai/AiChatDrawer";
 
@@ -47,6 +48,7 @@ export default function RootLayout({
                         <CartDrawer />
                         <AiChatDrawer />
                         <AuthModalHost />
+                        <ScrollToTop />
                         <Suspense>
                             <AuthRequiredListener />
                         </Suspense>
