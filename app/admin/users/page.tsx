@@ -86,6 +86,11 @@ export default function AdminUsersPage() {
 
   const handleDelete = async (uid: string) => {
     try {
+      await fetch("/api/admin/delete-user", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uid }),
+      });
       await deleteDoc(doc(db, "users", uid));
       setUsers((prev) => prev.filter((u) => u.uid !== uid));
       showToast("Користувача видалено");
@@ -321,7 +326,7 @@ export default function AdminUsersPage() {
           <div className={styles.modal}>
             <h3>Видалити користувача?</h3>
             <p style={{ color: "var(--muted)", fontSize: 14, margin: "0 0 20px" }}>
-              Буде видалено лише запис у Firestore. Акаунт у Firebase Auth залишиться.
+              Акаунт буде повністю видалено з бази користувачів.
             </p>
             <div className={styles.modalActions}>
               <button className={styles.btnSecondary} onClick={() => setConfirmDelete(null)}>Скасувати</button>
