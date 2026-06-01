@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   collection,
   getDocs,
@@ -11,7 +11,8 @@ import {
   query,
   orderBy,
 } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
+import { db, storage } from "@/lib/firebase";
 import { Product, Category } from "@/lib/api";
 import styles from "../admin.module.css";
 
@@ -25,6 +26,8 @@ type ProductForm = {
   color: string;
   description: string;
 };
+
+type UploadState = { file: File; preview: string } | null;
 
 const EMPTY_FORM: ProductForm = {
   name: "",
@@ -72,7 +75,6 @@ function validate(
   if (!f.name.trim()) errors.name = "Назва обов'язкова";
   if (!f.price || isNaN(parseFloat(f.price)) || parseFloat(f.price) <= 0)
     errors.price = "Введіть коректну ціну";
-  if (!f.image.trim()) errors.image = "URL зображення обов'язковий";
   if (f.stock === "" || isNaN(parseInt(f.stock))) errors.stock = "Залишок обов'язковий";
   if (f.categoryId === "__new__" || !f.categoryId) {
     if (!extra?.newCategoryName?.trim()) errors.categoryId = "Введіть назву нової категорії";
@@ -100,6 +102,9 @@ export default function AdminProductsPage() {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [filterOutOfStock, setFilterOutOfStock] = useState(false);
+  const [uploadState, setUploadState] = useState<UploadState>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -121,6 +126,12 @@ export default function AdminProductsPage() {
 
   const colorOptions = [...new Set(products.map((p) => p.color).filter(Boolean))].sort();
 
+  const resetUpload = () => {
+    setUploadState(null);
+    setUploadProgress(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const openCreate = () => {
     setEditTarget(null);
     setForm(EMPTY_FORM);
@@ -129,6 +140,7 @@ export default function AdminProductsPage() {
     setShowNewColorInput(false);
     setNewCategoryInput("");
     setShowNewCategoryInput(false);
+    resetUpload();
     setModalOpen(true);
   };
 
@@ -140,8 +152,22 @@ export default function AdminProductsPage() {
     setShowNewColorInput(false);
     setNewCategoryInput("");
     setShowNewCategoryInput(false);
+    resetUpload();
     setModalOpen(true);
   };
+
+  const uploadImage = (file: File): Promise<{ url: string; path: string }> =>
+    new Promise((resolve, reject) => {
+      const path = `products/${Date.now()}_${file.name}`;
+      const storageRef = ref(storage, path);
+      const task = uploadBytesResumable(storageRef, file);
+      task.on(
+        "state_changed",
+        (snap) => setUploadProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100)),
+        reject,
+        async () => { resolve({ url: await getDownloadURL(task.snapshot.ref), path }); }
+      );
+    });
 
   const handleSave = async () => {
     const errs = validate(form, {
@@ -151,6 +177,18 @@ export default function AdminProductsPage() {
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setSaving(true);
     try {
+      let imageUrl = form.image;
+      let imagePath: string | undefined = editTarget?.storagePath;
+      if (uploadState?.file) {
+        const uploaded = await uploadImage(uploadState.file);
+        imageUrl = uploaded.url;
+        imagePath = uploaded.path;
+      }
+      if (!imageUrl.trim() || imageUrl === "__pending__") {
+        setErrors((e) => ({ ...e, image: "Оберіть зображення" }));
+        setSaving(false);
+        return;
+      }
       let resolvedCategoryId = form.categoryId;
       if (showNewCategoryInput && newCategoryInput.trim()) {
         const existing = categories.find(
@@ -163,8 +201,12 @@ export default function AdminProductsPage() {
           resolvedCategoryId = newCatRef.id;
         }
       }
-      const data = formToProduct({ ...form, categoryId: resolvedCategoryId });
+      const baseData = formToProduct({ ...form, image: imageUrl, categoryId: resolvedCategoryId });
+      const data = imagePath ? { ...baseData, storagePath: imagePath } : baseData;
       if (editTarget) {
+        if (uploadState?.file && editTarget.storagePath) {
+          try { await deleteObject(ref(storage, editTarget.storagePath)); } catch { /* ignore */ }
+        }
         await updateDoc(doc(db, "products", editTarget.id), data as Record<string, unknown>);
         showToast("Товар оновлено");
       } else {
@@ -172,16 +214,22 @@ export default function AdminProductsPage() {
         showToast("Товар створено");
       }
       setModalOpen(false);
+      resetUpload();
       await load();
     } catch {
       showToast("Помилка збереження");
     } finally {
       setSaving(false);
+      setUploadProgress(null);
     }
   };
 
   const handleDelete = async (id: string) => {
     try {
+      const product = products.find((p) => p.id === id);
+      if (product?.storagePath) {
+        try { await deleteObject(ref(storage, product.storagePath)); } catch { /* ignore */ }
+      }
       await deleteDoc(doc(db, "products", id));
       setProducts((prev) => prev.filter((p) => p.id !== id));
       showToast("Товар видалено");
@@ -360,8 +408,51 @@ export default function AdminProductsPage() {
             </div>
 
             <div className={styles.formGroup}>
-              <label>URL зображення *</label>
-              <input className={styles.formInput} value={form.image} onChange={(e) => set("image", e.target.value)} placeholder="https://..." />
+              <label>Зображення *</label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const preview = URL.createObjectURL(file);
+                  setUploadState({ file, preview });
+                  set("image", "__pending__");
+                }}
+              />
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <button
+                  type="button"
+                  className={styles.btnSecondary}
+                  style={{ flexShrink: 0 }}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Обрати файл
+                </button>
+                {(uploadState?.preview || (editTarget?.image && !uploadState)) && (
+                  <img
+                    src={uploadState?.preview ?? editTarget?.image}
+                    alt="preview"
+                    style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, border: "1.5px solid var(--input-border)" }}
+                  />
+                )}
+                {uploadState && (
+                  <span style={{ fontSize: 13, color: "var(--muted)" }}>{uploadState.file.name}</span>
+                )}
+                {!uploadState && !editTarget?.image && (
+                  <span style={{ fontSize: 13, color: "var(--muted)" }}>Файл не обрано</span>
+                )}
+              </div>
+              {uploadProgress !== null && saving && (
+                <div style={{ marginTop: 8 }}>
+                  <div style={{ height: 4, borderRadius: 4, background: "var(--input-border)", overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${uploadProgress}%`, background: "var(--primary, #6C1A35)", transition: "width 0.2s" }} />
+                  </div>
+                  <span style={{ fontSize: 12, color: "var(--muted)" }}>{uploadProgress}%</span>
+                </div>
+              )}
               {errors.image && <span className={styles.fieldError}>{errors.image}</span>}
             </div>
 

@@ -3,6 +3,7 @@ export type Product = {
   name: string
   price: number
   image: string
+  storagePath?: string
   rating?: number
   stock: number
   categoryId: string
